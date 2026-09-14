@@ -6,7 +6,7 @@
       "properties": {
         "reservoir_name": "DONNER LAKE",
         "cdec_station_id": "DNN",
-        "source": "osm_derived_v3"
+        "source": "manual_user_review"
       },
       "geometry": {
         "type": "Polygon",
@@ -17,11 +17,11 @@
               39.3148055
             ],
             [
-              -120.230007265,
+              -120.23888816666667,
               39.3148055
             ],
             [
-              -120.230007265,
+              -120.23888816666667,
               39.330909500000004
             ],
             [
