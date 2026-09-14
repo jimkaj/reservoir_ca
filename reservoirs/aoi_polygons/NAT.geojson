@@ -1,0 +1,40 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "reservoir_name": "LAKE NATOMA  (NIMBUS DAM)",
+        "cdec_station_id": "NAT",
+        "source": "manual_user_review"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -121.236672125,
+              38.62275978
+            ],
+            [
+              -121.14820777499999,
+              38.62275978
+            ],
+            [
+              -121.14820777499999,
+              38.666958395
+            ],
+            [
+              -121.236672125,
+              38.666958395
+            ],
+            [
+              -121.236672125,
+              38.62275978
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

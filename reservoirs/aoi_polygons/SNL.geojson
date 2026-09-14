@@ -1,0 +1,40 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "reservoir_name": "SAN LUIS RESERVOIR",
+        "cdec_station_id": "SNL",
+        "source": "osm_derived_v4_bigradius"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -121.23681924499999,
+              36.95942628
+            ],
+            [
+              -120.86295445500001,
+              36.95942628
+            ],
+            [
+              -120.86295445500001,
+              37.16761192
+            ],
+            [
+              -121.23681924499999,
+              37.16761192
+            ],
+            [
+              -121.23681924499999,
+              36.95942628
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

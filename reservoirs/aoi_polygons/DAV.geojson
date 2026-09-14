@@ -1,0 +1,40 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "reservoir_name": "LAKE DAVIS (DWR)",
+        "cdec_station_id": "DAV",
+        "source": "osm_derived_v3"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -120.56067218999999,
+              39.86973245
+            ],
+            [
+              -120.46451821000001,
+              39.86973245
+            ],
+            [
+              -120.46451821000001,
+              39.94915855
+            ],
+            [
+              -120.56067218999999,
+              39.94915855
+            ],
+            [
+              -120.56067218999999,
+              39.86973245
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

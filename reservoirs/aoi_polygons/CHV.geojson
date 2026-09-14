@@ -1,0 +1,40 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "reservoir_name": "CHERRY VALLEY DAM",
+        "cdec_station_id": "CHV",
+        "source": "osm_derived_v3"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -119.92291267,
+              37.966174984999995
+            ],
+            [
+              -119.88853313,
+              37.966174984999995
+            ],
+            [
+              -119.88853313,
+              38.037459315
+            ],
+            [
+              -119.92291267,
+              38.037459315
+            ],
+            [
+              -119.92291267,
+              37.966174984999995
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

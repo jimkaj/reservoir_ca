@@ -1,0 +1,40 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "reservoir_name": "DONNELLS",
+        "cdec_station_id": "DON",
+        "source": "osm_derived_v3"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -119.966313965,
+              38.32587975
+            ],
+            [
+              -119.92717733500001,
+              38.32587975
+            ],
+            [
+              -119.92717733500001,
+              38.353428050000005
+            ],
+            [
+              -119.966313965,
+              38.353428050000005
+            ],
+            [
+              -119.966313965,
+              38.32587975
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

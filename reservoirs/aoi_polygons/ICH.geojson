@@ -1,0 +1,40 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "reservoir_name": "ICE HOUSE (SMUD)",
+        "cdec_station_id": "ICH",
+        "source": "osm_derived_v3"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -120.37273257999999,
+              38.812942310000004
+            ],
+            [
+              -120.30773102,
+              38.812942310000004
+            ],
+            [
+              -120.30773102,
+              38.83397709
+            ],
+            [
+              -120.37273257999999,
+              38.83397709
+            ],
+            [
+              -120.37273257999999,
+              38.812942310000004
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

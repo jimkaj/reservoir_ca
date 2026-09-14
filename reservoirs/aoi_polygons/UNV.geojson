@@ -1,0 +1,40 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "reservoir_name": "UNION VALLEY",
+        "cdec_station_id": "UNV",
+        "source": "osm_derived_v3"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -120.45472294,
+              38.84323755
+            ],
+            [
+              -120.35581686,
+              38.84323755
+            ],
+            [
+              -120.35581686,
+              38.904843250000006
+            ],
+            [
+              -120.45472294,
+              38.904843250000006
+            ],
+            [
+              -120.45472294,
+              38.84323755
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

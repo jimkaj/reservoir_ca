@@ -1,0 +1,40 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "reservoir_name": "PINE FLAT DAM",
+        "cdec_station_id": "PNF",
+        "source": "osm_derived_v3"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -119.35484587,
+              36.81628231
+            ],
+            [
+              -119.21233233,
+              36.81628231
+            ],
+            [
+              -119.21233233,
+              36.93288269
+            ],
+            [
+              -119.35484587,
+              36.93288269
+            ],
+            [
+              -119.35484587,
+              36.81628231
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

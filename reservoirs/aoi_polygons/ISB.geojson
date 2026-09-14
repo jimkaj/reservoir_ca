@@ -1,0 +1,40 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "reservoir_name": "ISABELLA DAM",
+        "cdec_station_id": "ISB",
+        "source": "osm_derived_v3"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -118.50463863,
+              35.624060615
+            ],
+            [
+              -118.34406756999999,
+              35.624060615
+            ],
+            [
+              -118.34406756999999,
+              35.754268485
+            ],
+            [
+              -118.50463863,
+              35.754268485
+            ],
+            [
+              -118.50463863,
+              35.624060615
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

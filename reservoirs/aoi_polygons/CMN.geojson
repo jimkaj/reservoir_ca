@@ -1,0 +1,40 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "reservoir_name": "CAMANCHE RESERVOIR",
+        "cdec_station_id": "CMN",
+        "source": "manual_user_review"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -121.036213584,
+              38.200794752
+            ],
+            [
+              -120.860157716,
+              38.200794752
+            ],
+            [
+              -120.860157716,
+              38.261730248
+            ],
+            [
+              -121.036213584,
+              38.261730248
+            ],
+            [
+              -121.036213584,
+              38.200794752
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

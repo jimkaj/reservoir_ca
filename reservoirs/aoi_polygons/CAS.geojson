@@ -1,0 +1,40 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "reservoir_name": "CASTAIC",
+        "cdec_station_id": "CAS",
+        "source": "manual_user_review"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -118.66971739,
+              34.48367708
+            ],
+            [
+              -118.55467181,
+              34.48367708
+            ],
+            [
+              -118.55467181,
+              34.601426919999994
+            ],
+            [
+              -118.66971739,
+              34.601426919999994
+            ],
+            [
+              -118.66971739,
+              34.48367708
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

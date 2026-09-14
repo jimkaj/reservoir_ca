@@ -1,0 +1,40 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "reservoir_name": "ENGLEBRIGHT (USACE)",
+        "cdec_station_id": "ENG",
+        "source": "osm_derived_v3"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -121.28128665499999,
+              39.232281869999994
+            ],
+            [
+              -121.247128245,
+              39.232281869999994
+            ],
+            [
+              -121.247128245,
+              39.28859293
+            ],
+            [
+              -121.28128665499999,
+              39.28859293
+            ],
+            [
+              -121.28128665499999,
+              39.232281869999994
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

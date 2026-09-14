@@ -1,0 +1,40 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "reservoir_name": "TERMINUS DAM",
+        "cdec_station_id": "TRM",
+        "source": "osm_derived_v3"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -119.01577833,
+              36.37870193
+            ],
+            [
+              -118.91395166999999,
+              36.37870193
+            ],
+            [
+              -118.91395166999999,
+              36.43694947
+            ],
+            [
+              -119.01577833,
+              36.43694947
+            ],
+            [
+              -119.01577833,
+              36.37870193
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

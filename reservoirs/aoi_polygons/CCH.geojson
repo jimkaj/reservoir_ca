@@ -1,0 +1,40 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "reservoir_name": "CACHUMA LAKE (BRADBURY DAM)",
+        "cdec_station_id": "CCH",
+        "source": "osm_derived_v3"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -119.998067585,
+              34.53880405
+            ],
+            [
+              -119.86622431500001,
+              34.53880405
+            ],
+            [
+              -119.86622431500001,
+              34.61513095
+            ],
+            [
+              -119.998067585,
+              34.61513095
+            ],
+            [
+              -119.998067585,
+              34.53880405
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "reservoir_name": "INDEPENDENCE LAKE NEAR TRUCKEE",
+        "cdec_station_id": "INP",
+        "source": "osm_derived_v3"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -120.336931975,
+              39.426958275
+            ],
+            [
+              -120.280584125,
+              39.426958275
+            ],
+            [
+              -120.280584125,
+              39.455453625000004
+            ],
+            [
+              -120.336931975,
+              39.455453625000004
+            ],
+            [
+              -120.336931975,
+              39.426958275
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

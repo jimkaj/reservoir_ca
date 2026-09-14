@@ -1,0 +1,40 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "reservoir_name": "SUCCESS DAM",
+        "cdec_station_id": "SCC",
+        "source": "osm_derived_v3"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -118.95468794,
+              36.05301598
+            ],
+            [
+              -118.87208645999999,
+              36.05301598
+            ],
+            [
+              -118.87208645999999,
+              36.11183942
+            ],
+            [
+              -118.95468794,
+              36.11183942
+            ],
+            [
+              -118.95468794,
+              36.05301598
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

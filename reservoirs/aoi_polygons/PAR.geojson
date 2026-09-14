@@ -1,0 +1,40 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "reservoir_name": "PARDEE",
+        "cdec_station_id": "PAR",
+        "source": "manual_user_review"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -120.87685435,
+              38.22838313
+            ],
+            [
+              -120.78365335,
+              38.22838313
+            ],
+            [
+              -120.78365335,
+              38.294094300000005
+            ],
+            [
+              -120.87685435,
+              38.294094300000005
+            ],
+            [
+              -120.87685435,
+              38.22838313
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

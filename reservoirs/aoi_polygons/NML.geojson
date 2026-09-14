@@ -1,0 +1,40 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "reservoir_name": "NEW MELONES RESERVOIR",
+        "cdec_station_id": "NML",
+        "source": "osm_derived_v4_bigradius"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -120.60441894,
+              37.892798045000006
+            ],
+            [
+              -120.34255526,
+              37.892798045000006
+            ],
+            [
+              -120.34255526,
+              38.168423655
+            ],
+            [
+              -120.60441894,
+              38.168423655
+            ],
+            [
+              -120.60441894,
+              37.892798045000006
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

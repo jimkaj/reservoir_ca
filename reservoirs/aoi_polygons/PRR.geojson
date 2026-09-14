@@ -1,0 +1,40 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "reservoir_name": "PERRIS",
+        "cdec_station_id": "PRR",
+        "source": "osm_derived_v3"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -117.202644085,
+              33.833126105
+            ],
+            [
+              -117.146845615,
+              33.833126105
+            ],
+            [
+              -117.146845615,
+              33.879912195
+            ],
+            [
+              -117.202644085,
+              33.879912195
+            ],
+            [
+              -117.202644085,
+              33.833126105
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

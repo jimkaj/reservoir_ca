@@ -1,0 +1,40 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "reservoir_name": "NEW BULLARDS BAR",
+        "cdec_station_id": "BUL",
+        "source": "osm_derived_v3"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -121.181653815,
+              39.368924325
+            ],
+            [
+              -121.061359485,
+              39.368924325
+            ],
+            [
+              -121.061359485,
+              39.550841774999995
+            ],
+            [
+              -121.181653815,
+              39.550841774999995
+            ],
+            [
+              -121.181653815,
+              39.368924325
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

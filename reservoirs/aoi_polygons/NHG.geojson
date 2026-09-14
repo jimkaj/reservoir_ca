@@ -1,0 +1,40 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "reservoir_name": "NEW HOGAN LAKE",
+        "cdec_station_id": "NHG",
+        "source": "osm_derived_v3"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -120.82917318,
+              38.101538825
+            ],
+            [
+              -120.70135562,
+              38.101538825
+            ],
+            [
+              -120.70135562,
+              38.214779875
+            ],
+            [
+              -120.82917318,
+              38.214779875
+            ],
+            [
+              -120.82917318,
+              38.101538825
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "reservoir_name": "TULLOCH",
+        "cdec_station_id": "TUL",
+        "source": "manual_user_review"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -120.64051813,
+              37.853783570000004
+            ],
+            [
+              -120.51954937000001,
+              37.853783570000004
+            ],
+            [
+              -120.51954937000001,
+              37.890798045000004
+            ],
+            [
+              -120.64051813,
+              37.890798045000004
+            ],
+            [
+              -120.64051813,
+              37.853783570000004
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

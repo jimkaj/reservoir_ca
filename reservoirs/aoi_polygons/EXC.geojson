@@ -1,0 +1,40 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "reservoir_name": "NEW EXCHEQUER-LK MCCLURE",
+        "cdec_station_id": "EXC",
+        "source": "manual_user_review"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -120.3395231,
+              37.559834924
+            ],
+            [
+              -120.0884179,
+              37.559834924
+            ],
+            [
+              -120.0884179,
+              37.712606576
+            ],
+            [
+              -120.3395231,
+              37.712606576
+            ],
+            [
+              -120.3395231,
+              37.559834924
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

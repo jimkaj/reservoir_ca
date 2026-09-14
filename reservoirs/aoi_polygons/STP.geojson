@@ -1,0 +1,40 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "reservoir_name": "STAMPEDE",
+        "cdec_station_id": "STP",
+        "source": "osm_derived_v3"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -120.200342345,
+              39.44618281
+            ],
+            [
+              -120.077302155,
+              39.44618281
+            ],
+            [
+              -120.077302155,
+              39.51038019
+            ],
+            [
+              -120.200342345,
+              39.51038019
+            ],
+            [
+              -120.200342345,
+              39.44618281
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

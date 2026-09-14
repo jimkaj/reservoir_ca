@@ -1,0 +1,40 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "reservoir_name": "LOON LAKE (SMUD)",
+        "cdec_station_id": "LON",
+        "source": "osm_derived_v3"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -120.3404081,
+              38.97510189
+            ],
+            [
+              -120.2787491,
+              38.97510189
+            ],
+            [
+              -120.2787491,
+              39.024615510000004
+            ],
+            [
+              -120.3404081,
+              39.024615510000004
+            ],
+            [
+              -120.3404081,
+              38.97510189
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

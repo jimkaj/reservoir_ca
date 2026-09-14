@@ -1,0 +1,40 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "reservoir_name": "HETCH HETCHY",
+        "cdec_station_id": "HTH",
+        "source": "osm_derived_v3"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -119.80876388,
+              37.908767435
+            ],
+            [
+              -119.64152252,
+              37.908767435
+            ],
+            [
+              -119.64152252,
+              37.970521465000004
+            ],
+            [
+              -119.80876388,
+              37.970521465000004
+            ],
+            [
+              -119.80876388,
+              37.908767435
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

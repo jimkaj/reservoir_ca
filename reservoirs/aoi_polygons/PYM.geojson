@@ -1,0 +1,40 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "reservoir_name": "PYRAMID",
+        "cdec_station_id": "PYM",
+        "source": "osm_derived_manual_buffer"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -118.83309425999998,
+              34.61735768
+            ],
+            [
+              -118.72293234000001,
+              34.61735768
+            ],
+            [
+              -118.72293234000001,
+              34.71261152
+            ],
+            [
+              -118.83309425999998,
+              34.71261152
+            ],
+            [
+              -118.83309425999998,
+              34.61735768
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

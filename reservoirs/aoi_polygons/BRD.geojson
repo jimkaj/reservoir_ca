@@ -1,0 +1,40 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "reservoir_name": "BEARDSLEY LAKE",
+        "cdec_station_id": "BRD",
+        "source": "osm_derived_manual_buffer"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -120.09632703999999,
+              38.187733720000004
+            ],
+            [
+              -120.02568856,
+              38.187733720000004
+            ],
+            [
+              -120.02568856,
+              38.24432718
+            ],
+            [
+              -120.09632703999999,
+              38.24432718
+            ],
+            [
+              -120.09632703999999,
+              38.187733720000004
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

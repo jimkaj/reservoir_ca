@@ -1,0 +1,40 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "reservoir_name": "OROVILLE DAM",
+        "cdec_station_id": "ORO",
+        "source": "osm_derived_v4_bigradius"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -121.61374685999999,
+              39.478153375
+            ],
+            [
+              -121.23765894,
+              39.478153375
+            ],
+            [
+              -121.23765894,
+              39.768232125
+            ],
+            [
+              -121.61374685999999,
+              39.768232125
+            ],
+            [
+              -121.61374685999999,
+              39.478153375
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

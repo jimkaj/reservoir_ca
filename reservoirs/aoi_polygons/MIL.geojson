@@ -1,0 +1,40 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "reservoir_name": "FRIANT DAM (MILLERTON)",
+        "cdec_station_id": "MIL",
+        "source": "osm_derived_v3"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -119.72294194999999,
+              36.97877496
+            ],
+            [
+              -119.59340605,
+              36.97877496
+            ],
+            [
+              -119.59340605,
+              37.06912444
+            ],
+            [
+              -119.72294194999999,
+              37.06912444
+            ],
+            [
+              -119.72294194999999,
+              36.97877496
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

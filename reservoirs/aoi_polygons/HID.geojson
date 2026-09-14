@@ -1,0 +1,40 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "reservoir_name": "HIDDEN DAM (HENSLEY)",
+        "cdec_station_id": "HID",
+        "source": "osm_derived_v3"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -119.900847895,
+              37.095729500000004
+            ],
+            [
+              -119.850333405,
+              37.095729500000004
+            ],
+            [
+              -119.850333405,
+              37.1572767
+            ],
+            [
+              -119.900847895,
+              37.1572767
+            ],
+            [
+              -119.900847895,
+              37.095729500000004
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "reservoir_name": "INDIAN VALLEY",
+        "cdec_station_id": "INV",
+        "source": "osm_derived_v3"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -122.59762139,
+              39.065628884999995
+            ],
+            [
+              -122.51143320999999,
+              39.065628884999995
+            ],
+            [
+              -122.51143320999999,
+              39.181656615
+            ],
+            [
+              -122.59762139,
+              39.181656615
+            ],
+            [
+              -122.59762139,
+              39.065628884999995
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

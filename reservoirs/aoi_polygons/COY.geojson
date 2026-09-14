@@ -1,0 +1,40 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "reservoir_name": "COYOTE (LAKE MENDOCINO)",
+        "cdec_station_id": "COY",
+        "source": "osm_derived_v3"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -123.19073236999999,
+              39.184568014999996
+            ],
+            [
+              -123.13932283,
+              39.184568014999996
+            ],
+            [
+              -123.13932283,
+              39.246910685
+            ],
+            [
+              -123.19073236999999,
+              39.246910685
+            ],
+            [
+              -123.19073236999999,
+              39.184568014999996
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

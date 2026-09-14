@@ -1,0 +1,40 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "reservoir_name": "BERRYESSA",
+        "cdec_station_id": "BER",
+        "source": "osm_derived_v4_bigradius"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -122.431651875,
+              38.44680788
+            ],
+            [
+              -122.060984825,
+              38.44680788
+            ],
+            [
+              -122.060984825,
+              38.74493012
+            ],
+            [
+              -122.431651875,
+              38.74493012
+            ],
+            [
+              -122.431651875,
+              38.44680788
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

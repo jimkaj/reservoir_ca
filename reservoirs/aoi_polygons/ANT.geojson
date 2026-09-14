@@ -1,0 +1,40 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "reservoir_name": "ANTELOPE LAKE",
+        "cdec_station_id": "ANT",
+        "source": "osm_derived_v3"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -120.63173348,
+              40.167748415
+            ],
+            [
+              -120.55957932,
+              40.167748415
+            ],
+            [
+              -120.55957932,
+              40.199879085
+            ],
+            [
+              -120.63173348,
+              40.199879085
+            ],
+            [
+              -120.63173348,
+              40.167748415
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

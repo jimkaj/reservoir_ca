@@ -1,0 +1,40 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "reservoir_name": "WHISKEYTOWN DAM (USBR)",
+        "cdec_station_id": "WHI",
+        "source": "osm_derived_v3"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -122.643443265,
+              40.589350055
+            ],
+            [
+              -122.50596423500001,
+              40.589350055
+            ],
+            [
+              -122.50596423500001,
+              40.664422845000004
+            ],
+            [
+              -122.643443265,
+              40.664422845000004
+            ],
+            [
+              -122.643443265,
+              40.589350055
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

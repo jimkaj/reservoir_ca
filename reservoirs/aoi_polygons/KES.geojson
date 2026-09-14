@@ -1,0 +1,40 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "reservoir_name": "KESWICK RESERVOIR",
+        "cdec_station_id": "KES",
+        "source": "manual_user_review_v2"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -122.46969513,
+              40.60160234
+            ],
+            [
+              -122.41497717,
+              40.60160234
+            ],
+            [
+              -122.41497717,
+              40.7133553
+            ],
+            [
+              -122.46969513,
+              40.7133553
+            ],
+            [
+              -122.46969513,
+              40.60160234
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

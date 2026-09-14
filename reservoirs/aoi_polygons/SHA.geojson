@@ -1,0 +1,40 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "reservoir_name": "SHASTA DAM  (USBR)",
+        "cdec_station_id": "SHA",
+        "source": "osm_derived_v4_bigradius"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -122.53666288000001,
+              40.679438345
+            ],
+            [
+              -121.94713211999999,
+              40.679438345
+            ],
+            [
+              -121.94713211999999,
+              40.982051955
+            ],
+            [
+              -122.53666288000001,
+              40.982051955
+            ],
+            [
+              -122.53666288000001,
+              40.679438345
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

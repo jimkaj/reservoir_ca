@@ -1,0 +1,40 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "reservoir_name": "WARM SPRINGS (LAKE SONOMA)",
+        "cdec_station_id": "WRS",
+        "source": "osm_derived_v3"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -123.15866124,
+              38.66709144
+            ],
+            [
+              -122.98991916,
+              38.66709144
+            ],
+            [
+              -122.98991916,
+              38.80894276
+            ],
+            [
+              -123.15866124,
+              38.80894276
+            ],
+            [
+              -123.15866124,
+              38.66709144
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

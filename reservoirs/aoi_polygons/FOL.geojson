@@ -1,0 +1,40 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "reservoir_name": "FOLSOM LAKE",
+        "cdec_station_id": "FOL",
+        "source": "osm_derived_v3"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -121.195620315,
+              38.668458395
+            ],
+            [
+              -120.990259185,
+              38.668458395
+            ],
+            [
+              -120.990259185,
+              38.899729305
+            ],
+            [
+              -121.195620315,
+              38.899729305
+            ],
+            [
+              -121.195620315,
+              38.668458395
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

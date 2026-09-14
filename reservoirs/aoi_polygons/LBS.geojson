@@ -1,0 +1,40 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "reservoir_name": "LOS BANOS DAM",
+        "cdec_station_id": "LBS",
+        "source": "osm_derived_v3"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -120.99082808499999,
+              36.971489725
+            ],
+            [
+              -120.92255221500001,
+              36.971489725
+            ],
+            [
+              -120.92255221500001,
+              36.995834175
+            ],
+            [
+              -120.99082808499999,
+              36.995834175
+            ],
+            [
+              -120.99082808499999,
+              36.971489725
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

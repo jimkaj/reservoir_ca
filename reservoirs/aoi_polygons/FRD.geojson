@@ -1,0 +1,40 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "reservoir_name": "FRENCHMAN DAM",
+        "cdec_station_id": "FRD",
+        "source": "osm_derived_v3"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -120.22427561999999,
+              39.8823192
+            ],
+            [
+              -120.16874118000001,
+              39.8823192
+            ],
+            [
+              -120.16874118000001,
+              39.9591284
+            ],
+            [
+              -120.22427561999999,
+              39.9591284
+            ],
+            [
+              -120.22427561999999,
+              39.8823192
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

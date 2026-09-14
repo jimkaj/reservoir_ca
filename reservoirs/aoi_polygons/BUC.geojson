@@ -1,0 +1,40 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "reservoir_name": "BUCHANAN DAM",
+        "cdec_station_id": "BUC",
+        "source": "osm_derived_v3"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -119.99258901,
+              37.202698155
+            ],
+            [
+              -119.93828099,
+              37.202698155
+            ],
+            [
+              -119.93828099,
+              37.271216345
+            ],
+            [
+              -119.99258901,
+              37.271216345
+            ],
+            [
+              -119.99258901,
+              37.202698155
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

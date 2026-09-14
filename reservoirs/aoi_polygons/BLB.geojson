@@ -1,0 +1,40 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "reservoir_name": "BLACK BUTTE",
+        "cdec_station_id": "BLB",
+        "source": "osm_derived_v3"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -122.42745053499999,
+              39.747430555
+            ],
+            [
+              -122.323974565,
+              39.747430555
+            ],
+            [
+              -122.323974565,
+              39.832528945
+            ],
+            [
+              -122.42745053499999,
+              39.832528945
+            ],
+            [
+              -122.42745053499999,
+              39.747430555
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

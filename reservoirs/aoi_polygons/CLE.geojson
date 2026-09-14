@@ -1,0 +1,40 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "reservoir_name": "TRINITY LAKE",
+        "cdec_station_id": "CLE",
+        "source": "osm_derived_v4_bigradius"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -122.90416615,
+              40.760351805
+            ],
+            [
+              -122.58960125,
+              40.760351805
+            ],
+            [
+              -122.58960125,
+              41.088892095000006
+            ],
+            [
+              -122.90416615,
+              41.088892095000006
+            ],
+            [
+              -122.90416615,
+              40.760351805
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

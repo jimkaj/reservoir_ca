@@ -1,0 +1,40 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "reservoir_name": "LEWISTON",
+        "cdec_station_id": "LEW",
+        "source": "manual_user_review_v2"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -122.81815342,
+              40.71594618
+            ],
+            [
+              -122.75528698,
+              40.71594618
+            ],
+            [
+              -122.75528698,
+              40.785
+            ],
+            [
+              -122.81815342,
+              40.785
+            ],
+            [
+              -122.81815342,
+              40.71594618
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

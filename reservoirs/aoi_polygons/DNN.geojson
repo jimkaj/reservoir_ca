@@ -1,0 +1,40 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "reservoir_name": "DONNER LAKE",
+        "cdec_station_id": "DNN",
+        "source": "osm_derived_v3"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -120.297369235,
+              39.3148055
+            ],
+            [
+              -120.230007265,
+              39.3148055
+            ],
+            [
+              -120.230007265,
+              39.330909500000004
+            ],
+            [
+              -120.297369235,
+              39.330909500000004
+            ],
+            [
+              -120.297369235,
+              39.3148055
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

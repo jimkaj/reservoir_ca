@@ -1,0 +1,40 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "reservoir_name": "DON PEDRO RESERVOIR",
+        "cdec_station_id": "DNP",
+        "source": "manual_user_review_v6"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -120.44304629,
+              37.674534
+            ],
+            [
+              -120.335,
+              37.674534
+            ],
+            [
+              -120.335,
+              37.91869198
+            ],
+            [
+              -120.44304629,
+              37.91869198
+            ],
+            [
+              -120.44304629,
+              37.674534
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}
