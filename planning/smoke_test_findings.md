@@ -44,3 +44,46 @@ like Hetch Hetchy, not just a cloud-cover check — otherwise the calibration st
 tuning SAR thresholds to match a broken optical signal for reservoirs like HTH.
 
 **This is the starting point for the next session.**
+
+## Addendum (2026-09-16): re-measured with calibrated SAR thresholds
+
+`reservoir_ca/sar_threshold_calibration.py` calibrated 47/48 reservoirs (see
+`reservoirs/sar_threshold_calibration.csv`). `compare_calibrated_thresholds.py` then
+re-measured the *exact same* same-day S1/S2 scene pairs already logged in
+`ProcessedImagery.csv` from the run above, using each reservoir's calibrated threshold in
+place of plain Otsu, and wrote `reservoirs/smoke_test_calibrated_comparison.csv` (169 pairs
+across 42 reservoirs with same-day imagery; CLE/FOL/WHI/PRR/KES/LEW still have none, matching
+the original run).
+
+**Headline result: calibration worked, and better than it first looked.** Naively averaged
+across all 169 pairs, several previously-flagged reservoirs still looked hot (LON 2.2x, ICH
+1.77x, DON 1.45x, etc.) and one — UNV — looked *worse* (2.59x avg). But per-date inspection
+showed something the naive average hid: **SAR area was rock-steady across dates for these
+reservoirs while optical area cratered on specific dates** — e.g. LON's SAR area stayed
+4.66-4.88M m² across three dates while its optical read dropped to 1.3M m² on 2026-09-07 alone
+(a 3.6x mismatch on that one date, ~1.0x on the other two). The same three dates —
+**2026-08-08, 2026-09-07, 2026-09-12** — account for 17 of the run's 169 pairs but 15 of its
+17 worst outliers, hitting seven-plus otherwise-unrelated reservoirs (BRD, DNN, LON, DON, ICH,
+CHV, HTH on 09-07 alone). That's a systematic, cross-reservoir optical-measurement problem on
+specific S2 acquisition dates, not a per-reservoir SAR calibration problem — and September is
+peak California wildfire season, so smoke/haze that s2cloudless's cloud-probability model
+doesn't screen for (it detects clouds, not smoke) is the leading suspect. This is the same
+failure mode already flagged for Hetch Hetchy, just broader than "canyon shadow" — it's
+hitting flat, open reservoirs too, on the same handful of dates.
+
+**Excluding those three dates, agreement is excellent: 32 of 36 reservoirs land within
+0.85x-1.15x**, mean ratio 1.109x — a large jump from the original 25/45 under plain Otsu, and
+strong confirmation the calibration step is doing its job. Two reservoirs remain genuinely
+elevated even on clean dates — **SCC (1.94x)** and **LBS (1.38x)** — both among the weakest
+calibration IoUs (0.68 and 0.62 respectively), so these look like real per-reservoir
+calibration/AOI issues worth a closer look, not measurement noise. HTH has no clean-date pairs
+at all in this sample (all three of its logged pairs fell on suspect dates), consistent with
+it being unusually smoke/haze-prone, though its sample is too small to be conclusive alone.
+
+**Implication:** the optical measurement path (`measure_water_area_optical`, and the
+calibration target's cloud gate) likely needs a haze/smoke screen in addition to the existing
+cloud-probability screen — not just for calibration, but for Stage 1 production measurements,
+which would be equally fooled by a smoke-contaminated NDWI read on a live date. **This is the
+starting point for the next session**, along with a closer look at SCC and LBS specifically
+(narrow AOI geometry vs. genuine calibration difficulty) and why FOL still has insufficient
+paired imagery to calibrate at all.

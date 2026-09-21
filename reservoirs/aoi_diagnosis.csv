@@ -1,0 +1,2 @@
+cdec_station_id,primary_issue,area_m2,perimeter_m,edge_pixel_fraction,isoperimetric_quotient,shape_difficulty_flagged,core_too_narrow_for_check,over_inclusion_fraction,under_inclusion_fraction,over_inclusion_flagged,under_inclusion_flagged
+LBS,aoi_over_inclusion,3906217.6294318032,17634.112704137715,0.04497855585107813,0.15785526638478167,False,False,0.24735438063712423,0.17632219134955995,True,False

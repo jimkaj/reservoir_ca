@@ -49,18 +49,38 @@ def main() -> None:
             raise SystemExit(f"No reservoir with cdec_station_id={args.reservoir!r}")
     processed = config.load_processed_scene_ids()
     sar_thresholds = config.load_sar_thresholds()
+    excluded_geometries = config.load_excluded_geometries()
 
     for reservoir in reservoirs:
         aoi = ee.Geometry(reservoir.aoi_geometry())
-        scenes = s1qm.find_new_scenes(reservoir, args.since, processed)
+        reservoir_excluded = {
+            (orbit_pass, relative_orbit)
+            for station_id, orbit_pass, relative_orbit in excluded_geometries
+            if station_id == reservoir.cdec_station_id
+        }
+        scenes = s1qm.find_new_scenes(
+            reservoir, args.since, processed, excluded_geometries=reservoir_excluded
+        )
         if not scenes:
             print(f"{reservoir.cdec_station_id}: no new scenes since {args.since}")
             continue
 
         for scene in scenes:
+            ledger_row = {
+                "sensor": scene["sensor"],
+                "scene_id": scene["scene_id"],
+                "cdec_station_id": reservoir.cdec_station_id,
+                "scene_date": scene["date"],
+            }
+
             if scene["sensor"] == "S1":
                 image = ee.Image(f"{s1qm.S1_COLLECTION}/{scene['scene_id']}")
-                calibration = sar_thresholds.get(reservoir.cdec_station_id)
+                calibration = config.resolve_sar_threshold(
+                    sar_thresholds,
+                    reservoir.cdec_station_id,
+                    scene["orbit_pass"],
+                    scene["relative_orbit"],
+                )
                 result = s1qm.measure_water_area_sar(
                     image,
                     aoi,
@@ -69,26 +89,46 @@ def main() -> None:
                     ),
                     band=calibration["band"] if calibration else "VV",
                 )
+                ledger_row.update(
+                    area_m2=result["area_m2"],
+                    method=result["method"],
+                    band=result["band"],
+                    threshold_db=result["threshold_db"],
+                    orbit_pass=scene["orbit_pass"],
+                    relative_orbit=scene["relative_orbit"],
+                )
             else:
                 image = ee.Image(f"{s1qm.S2_COLLECTION}/{scene['scene_id']}")
                 result = s1qm.measure_water_area_optical(image, aoi)
                 if result is None:
+                    # measure_water_area_optical() collapses every rejection reason to None;
+                    # cheaply recompute each check here just to log which one it was (otherwise
+                    # invisible in the ledger).
+                    cloud_fraction = s1qm.s2_cloud_fraction(image, aoi)
+                    if cloud_fraction is not None and cloud_fraction > s1qm.DEFAULT_MAX_CLOUD_FRACTION:
+                        reason, method = "too cloudy", "skipped_cloudy"
+                    else:
+                        bad_fraction = s1qm.scl_bad_fraction(image, aoi)
+                        if bad_fraction is not None and bad_fraction > s1qm.DEFAULT_MAX_SCL_BAD_FRACTION:
+                            reason, method = "cirrus/SCL contamination", "skipped_cirrus"
+                        else:
+                            reason, method = "too hazy (AOD)", "skipped_hazy"
                     print(
                         f"{reservoir.cdec_station_id}: skipped {scene['scene_id']} "
-                        "(too cloudy over AOI)"
+                        f"({reason} over AOI)"
                     )
-                    config.append_processed_scene(
-                        scene["sensor"],
-                        scene["scene_id"],
-                        reservoir.cdec_station_id,
-                        scene["date"],
-                    )
+                    ledger_row["method"] = method
+                    config.append_processed_scene(ledger_row)
                     continue
+                ledger_row.update(
+                    area_m2=result["area_m2"],
+                    cloud_fraction=result["cloud_fraction"],
+                    aod=result["aod"],
+                    scl_bad_fraction=result["scl_bad_fraction"],
+                )
 
             print(f"{reservoir.cdec_station_id} {scene['sensor']} {scene['date']}: {result}")
-            config.append_processed_scene(
-                scene["sensor"], scene["scene_id"], reservoir.cdec_station_id, scene["date"]
-            )
+            config.append_processed_scene(ledger_row)
 
 
 if __name__ == "__main__":
