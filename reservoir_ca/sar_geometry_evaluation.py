@@ -106,24 +106,28 @@ def evaluate_geometries(paired: pd.DataFrame) -> pd.DataFrame:
 
 
 def _load_threshold_records() -> dict[tuple, dict]:
-    """Existing sar_threshold_calibration.csv rows, keyed for round-trip-safe rewriting."""
+    """Existing sar_threshold_calibration.csv rows, keyed for round-trip-safe rewriting.
+
+    Reads the CSV directly rather than via config.load_sar_thresholds() -- that helper
+    deliberately returns only {"band", "threshold_db"} per entry (all resolve_sar_threshold()
+    needs to pick a scene's threshold), so routing a rewrite through it would silently drop
+    every other column (area_ratio_*, iou, n_pairs, calibrated_at) from every row this call
+    doesn't touch, corrupting the whole-fleet calibration history on the next save.
+    """
     records: dict[tuple, dict] = {}
-    thresholds = config.load_sar_thresholds()
-    for station_id, entry in thresholds.items():
-        if entry["default"] is not None:
-            records[(station_id, None, None)] = {
-                "cdec_station_id": station_id,
-                "orbit_pass": None,
-                "relative_orbit": None,
-                **entry["default"],
-            }
-        for (orbit_pass, relative_orbit), record in entry["overrides"].items():
-            records[(station_id, orbit_pass, relative_orbit)] = {
-                "cdec_station_id": station_id,
-                "orbit_pass": orbit_pass,
-                "relative_orbit": relative_orbit,
-                **record,
-            }
+    if not config.SAR_THRESHOLD_CALIBRATION_CSV.exists():
+        return records
+    df = pd.read_csv(config.SAR_THRESHOLD_CALIBRATION_CSV)
+    for row in df.itertuples(index=False):
+        has_geometry = isinstance(row.orbit_pass, str) and row.orbit_pass and not pd.isna(
+            row.relative_orbit
+        )
+        key = (
+            (row.cdec_station_id, row.orbit_pass, int(row.relative_orbit))
+            if has_geometry
+            else (row.cdec_station_id, None, None)
+        )
+        records[key] = row._asdict()
     return records
 
 

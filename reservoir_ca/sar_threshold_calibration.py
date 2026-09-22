@@ -481,6 +481,39 @@ def run_calibration(
     }
 
 
+def run_seasonal_calibration(
+    reservoir: Reservoir,
+    since_date: str,
+    exclude_months: tuple[int, ...],
+    until_date: str | None = None,
+) -> dict | None:
+    """Calibrate a whole-station threshold using only paired dates outside `exclude_months`
+    (1-12, from each pair's S1 date).
+
+    Motivated by the 2026-09-21 UNV finding: high-Sierra reservoirs can show large SAR/optical
+    disagreement that isn't explained by AOI mismatch, shape, or per-geometry orbit bias, but
+    clusters heavily in winter months (UNV's error was ~80% likely to exceed 3x in Dec-Feb vs.
+    0% in Jun/Aug/Sep) -- consistent with winter ice on the reservoir surface: optical NDWI
+    correctly excludes ice as non-water while SAR backscatter may not distinguish it as cleanly,
+    a genuine seasonal physical effect rather than a measurement defect. Returns None if too few
+    pairs remain after the month exclusion (MIN_PAIRS_TO_CALIBRATE).
+    """
+    aoi = ee.Geometry(reservoir.aoi_geometry())
+    pairs = pair_s1_s2_dates(reservoir, aoi, since_date, until_date)
+    pairs = [p for p in pairs if _dt.date.fromisoformat(p["s1_date"]).month not in exclude_months]
+    result = _calibrate_from_pairs(
+        aoi, pairs, MIN_PAIRS_TO_CALIBRATE, shuffle_seed=f"{reservoir.cdec_station_id}:seasonal"
+    )
+    if result is None:
+        return None
+    return {
+        "cdec_station_id": reservoir.cdec_station_id,
+        "orbit_pass": None,
+        "relative_orbit": None,
+        **result,
+    }
+
+
 def run_geometry_recalibration(
     reservoir: Reservoir,
     orbit_pass: str,

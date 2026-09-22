@@ -50,6 +50,7 @@ class Reservoir:
     capacity_af: int
     dam_lat: float
     dam_lon: float
+    seasonal_exclusion_months: frozenset[int] = frozenset()
 
     def aoi_geometry(self) -> dict:
         """The AOI polygon as a GeoJSON geometry dict, suitable for ee.Geometry(...)."""
@@ -57,14 +58,33 @@ class Reservoir:
         return data["features"][0]["geometry"]
 
 
-def load_reservoirs(csv_path: Path = RESERVOIR_LIST_CSV) -> list[Reservoir]:
+def load_reservoirs(
+    csv_path: Path = RESERVOIR_LIST_CSV, include_excluded: bool = False
+) -> list[Reservoir]:
+    """Load the monitored reservoir set.
+
+    ReservoirList.csv's `excluded`/`exclusion_reason` columns mark reservoirs dropped from
+    monitoring because no SAR/optical configuration produces trustworthy data for them (see
+    the 2026-09-21 large-error-cluster investigation, planning/smoke_test_findings.md) -- these
+    are skipped by default so every CLI (main.py, calibrate_sar_thresholds.py, etc.) naturally
+    stops processing them without individual changes. Pass include_excluded=True for one-off
+    diagnostic/review tooling that still needs to look at an excluded reservoir directly.
+    """
     df = pd.read_csv(csv_path)
+    if not include_excluded and "excluded" in df.columns:
+        df = df[~df["excluded"].fillna(False)]
     reservoirs = []
     for row in df.itertuples(index=False):
         capacity_curve = (
             RESERVOIRS_DIR / row.capacity_curve_path
             if isinstance(row.capacity_curve_path, str) and row.capacity_curve_path
             else None
+        )
+        seasonal_months = getattr(row, "seasonal_exclusion_months", None)
+        seasonal_exclusion = (
+            frozenset(int(m) for m in str(seasonal_months).split(","))
+            if isinstance(seasonal_months, str) and seasonal_months
+            else frozenset()
         )
         reservoirs.append(
             Reservoir(
@@ -75,6 +95,7 @@ def load_reservoirs(csv_path: Path = RESERVOIR_LIST_CSV) -> list[Reservoir]:
                 capacity_af=row.capacity_af,
                 dam_lat=row.dam_lat,
                 dam_lon=row.dam_lon,
+                seasonal_exclusion_months=seasonal_exclusion,
             )
         )
     return reservoirs

@@ -1,0 +1,3 @@
+cdec_station_id,orbit_pass,relative_orbit,reason,n_samples,fraction_biased,mean_log_error,excluded_at
+BRD,ASCENDING,137,recalibration area-ratio validation error 0.306 above 0.140 (IoU diagnostic: 0.799); DESCENDING/42 clears the bar and remains available,,,,2026-09-21T21:01:45.440233+00:00
+BRD,DESCENDING,144,recalibration area-ratio validation error 0.299 above 0.140 (IoU diagnostic: 0.852); DESCENDING/42 clears the bar and remains available,,,,2026-09-21T21:01:45.440233+00:00

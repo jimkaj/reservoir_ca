@@ -69,11 +69,14 @@ def find_new_scenes(
     """Find S1 and S2 scenes covering this reservoir's AOI since `since_date`.
 
     Excludes scenes already in `processed_scene_ids` (a set of (sensor, scene_id) pairs, per
-    config.load_processed_scene_ids), scenes whose footprint doesn't fully cover the AOI, and
+    config.load_processed_scene_ids), scenes whose footprint doesn't fully cover the AOI,
     -- for S1 -- any scene whose (orbit_pass, relative_orbit) is in `excluded_geometries`
     (station-specific entries from config.load_excluded_geometries; see
-    reservoir_ca/sar_geometry_evaluation.py). A reservoir with no excluded geometries gets
-    every covering scene, as before.
+    reservoir_ca/sar_geometry_evaluation.py), and -- both sensors -- any scene dated within
+    `reservoir.seasonal_exclusion_months` (e.g. winter months where ice contaminates the
+    optical/SAR comparison for high-Sierra reservoirs like UNV -- see the 2026-09-21
+    large-error-cluster investigation, planning/smoke_test_findings.md). A reservoir with no
+    excluded geometries or seasonal exclusion gets every covering scene, as before.
 
     Returns a list of dicts: {"sensor": "S1"|"S2", "scene_id": str, "date": iso date str,
     "orbit_pass": str | None, "relative_orbit": int | None} -- the orbit fields are S1-only
@@ -81,6 +84,7 @@ def find_new_scenes(
     """
     until_date = until_date or _dt.datetime.now(_dt.timezone.utc).strftime("%Y-%m-%d")
     excluded_geometries = excluded_geometries or set()
+    excluded_months = reservoir.seasonal_exclusion_months
     aoi = ee.Geometry(reservoir.aoi_geometry())
 
     s1 = (
@@ -117,6 +121,8 @@ def find_new_scenes(
             date = _dt.datetime.fromtimestamp(ts / 1000, tz=_dt.timezone.utc).strftime(
                 "%Y-%m-%d"
             )
+            if excluded_months and _dt.date.fromisoformat(date).month in excluded_months:
+                continue
             scenes.append(
                 {
                     "sensor": sensor,
