@@ -42,11 +42,17 @@ def main() -> None:
 
     gee_auth.initialize(project=args.project)
 
-    reservoirs = config.load_reservoirs()
     if args.reservoir:
+        # Naming a reservoir explicitly is a deliberate, targeted request -- it should work even
+        # for an excluded one (e.g. FOL, kept out of the monitored/calibration set by a Stage 1
+        # imagery-coverage bug rather than a measurement-quality problem, but still worth scanning
+        # for new scenes against the day a fix lands), unlike the full-fleet default run below.
+        reservoirs = config.load_reservoirs(include_excluded=True)
         reservoirs = [r for r in reservoirs if r.cdec_station_id == args.reservoir]
         if not reservoirs:
             raise SystemExit(f"No reservoir with cdec_station_id={args.reservoir!r}")
+    else:
+        reservoirs = config.load_reservoirs()
     processed = config.load_processed_scene_ids()
     sar_thresholds = config.load_sar_thresholds()
     excluded_geometries = config.load_excluded_geometries()
