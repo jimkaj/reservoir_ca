@@ -49,11 +49,15 @@ def main() -> None:
 
     gee_auth.initialize(project=args.project)
 
-    reservoirs = config.load_reservoirs()
     if args.reservoir:
+        # Same fix as main.py's --reservoir handling: naming a reservoir explicitly should work
+        # even for an excluded one.
+        reservoirs = config.load_reservoirs(include_excluded=True)
         reservoirs = [r for r in reservoirs if r.cdec_station_id == args.reservoir]
         if not reservoirs:
             raise SystemExit(f"No reservoir with cdec_station_id={args.reservoir!r}")
+    else:
+        reservoirs = config.load_reservoirs()
 
     rows = []
     for reservoir in reservoirs:

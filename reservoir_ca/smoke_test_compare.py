@@ -48,7 +48,10 @@ def compare_reservoir(
         s2_id = sub.loc[(sub["sensor"] == "S2") & (sub["scene_date"] == date), "scene_id"].iloc[0]
 
         s1_image = ee.Image(f"{s1qm.S1_COLLECTION}/{s1_id}")
-        s2_image = ee.Image(f"{s1qm.S2_COLLECTION}/{s2_id}")
+        # s2_id may be several "+"-joined tile ids for a multi-tile mosaic scene (see
+        # stage1_query_measure.s2_covering_groups) -- split back into a list either way.
+        s2_tile_ids = s2_id.split("+")
+        s2_image = s1qm.build_s2_mosaic(s2_tile_ids)
 
         sar_result = s1qm.measure_water_area_sar(
             s1_image,
@@ -56,7 +59,7 @@ def compare_reservoir(
             calibrated_threshold_db=calibration["threshold_db"] if calibration else None,
             band=calibration["band"] if calibration else "VV",
         )
-        optical_result = s1qm.measure_water_area_optical(s2_image, aoi)
+        optical_result = s1qm.measure_water_area_optical(s2_image, s2_tile_ids, date, aoi)
         if optical_result is None:
             continue
 

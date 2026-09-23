@@ -59,6 +59,78 @@ DEFAULT_MAX_AOD = 0.3
 DEFAULT_MAX_SCL_BAD_FRACTION = 0.1
 
 
+def _ts_to_date(ts_millis: float) -> str:
+    return _dt.datetime.fromtimestamp(ts_millis / 1000, tz=_dt.timezone.utc).strftime("%Y-%m-%d")
+
+
+def s2_covering_groups(s2_collection: ee.ImageCollection, aoi: ee.Geometry) -> list[dict]:
+    """Group `s2_collection`'s scenes (already filterBounds/filterDate'd to a reservoir's AOI and
+    a date window) by acquisition date, and return the ones whose combined footprint fully covers
+    the AOI: either one tile (the common case) or several same-date tiles unioned together, for
+    an AOI that straddles an MGRS tile boundary closely enough that no single S2 scene ever
+    contains it alone.
+
+    Motivated by FOL (Folsom Lake): confirmed live 2026-09-22 that FOL's AOI splits close to
+    50/50 across two adjacent tiles (10SFH/10SFJ), so only 1 of 347 candidate S2 scenes over a
+    2-year window individually covered it, vs. a normal ~1/3 for Sentinel-1's much wider swath --
+    a near-total loss of optical coverage for that one reservoir. A same-day fleet-wide check
+    found this isn't a widespread problem (27/48 reservoirs span 2+ tiles, but every other one
+    sits mostly within a single tile with the AOI crossing just a corner into the neighbor) --
+    see reservoir_ca_status memory, 2026-09-22 entries.
+
+    Only pays the extra per-date EE round trip for dates that actually need it: any date where a
+    single tile already covers the AOI is resolved by one batched contains-check, same cost as
+    before this function existed.
+
+    Returns [{"scene_ids": [...], "date": iso_date}, ...] -- `scene_ids` sorted for a stable,
+    deterministic group identity (see find_new_scenes, which joins them into one ledger scene_id).
+    """
+    single_covering = s2_collection.map(
+        lambda img: img.set("covers_aoi", img.geometry().contains(aoi, ee.ErrorMargin(100)))
+    ).filter(ee.Filter.eq("covers_aoi", True))
+    single_ids = single_covering.aggregate_array("system:index").getInfo()
+    single_millis = single_covering.aggregate_array("system:time_start").getInfo()
+    single_id_set = set(single_ids)
+
+    groups = [
+        {"scene_ids": [scene_id], "date": _ts_to_date(ts)}
+        for scene_id, ts in zip(single_ids, single_millis)
+    ]
+
+    all_ids = s2_collection.aggregate_array("system:index").getInfo()
+    all_millis = s2_collection.aggregate_array("system:time_start").getInfo()
+    by_date: dict[str, list[str]] = {}
+    for scene_id, ts in zip(all_ids, all_millis):
+        if scene_id in single_id_set:
+            continue
+        by_date.setdefault(_ts_to_date(ts), []).append(scene_id)
+
+    for date, ids_on_date in by_date.items():
+        if len(ids_on_date) < 2:
+            continue  # a lone non-covering tile on its own date can't cover the AOI either
+        mosaic_geometry = ee.ImageCollection(
+            [ee.Image(f"{S2_COLLECTION}/{scene_id}") for scene_id in ids_on_date]
+        ).geometry()
+        if mosaic_geometry.contains(aoi, ee.ErrorMargin(100)).getInfo():
+            groups.append({"scene_ids": sorted(ids_on_date), "date": date})
+
+    return groups
+
+
+def build_s2_mosaic(scene_ids: list[str]) -> ee.Image:
+    """The S2 image to measure against for one scene group from s2_covering_groups: a single
+    image unchanged for a single-tile group, or a mosaic of same-date tiles for a multi-tile one.
+
+    mosaic() keeps every band each constituent scene has (SCL included, needed by
+    scl_bad_fraction), but does not carry over scene-level metadata like
+    system:index/system:time_start -- callers must pass scene_ids/date explicitly to anything
+    downstream that used to read those properties off the image (s2_cloud_fraction, aod_value).
+    """
+    return ee.ImageCollection(
+        [ee.Image(f"{S2_COLLECTION}/{scene_id}") for scene_id in scene_ids]
+    ).mosaic()
+
+
 def find_new_scenes(
     reservoir: Reservoir,
     since_date: str,
@@ -78,9 +150,15 @@ def find_new_scenes(
     large-error-cluster investigation, planning/smoke_test_findings.md). A reservoir with no
     excluded geometries or seasonal exclusion gets every covering scene, as before.
 
+    S2 coverage is grouped per s2_covering_groups: an AOI that straddles an MGRS tile boundary
+    (see FOL) can need several same-date tiles mosaicked together to cover it. A multi-tile S2
+    "scene" therefore has a scene_id that's a "+"-joined, sorted list of its constituent tile
+    ids (a single-tile date keeps its bare original scene_id, unchanged from before this existed)
+    and an extra `s2_tile_ids` list callers use to build the actual mosaic (see build_s2_mosaic).
+
     Returns a list of dicts: {"sensor": "S1"|"S2", "scene_id": str, "date": iso date str,
-    "orbit_pass": str | None, "relative_orbit": int | None} -- the orbit fields are S1-only
-    and None for S2 scenes.
+    "orbit_pass": str | None, "relative_orbit": int | None, "s2_tile_ids": list[str] | None} --
+    the orbit fields are S1-only (None for S2); s2_tile_ids is S2-only (None for S1).
     """
     until_date = until_date or _dt.datetime.now(_dt.timezone.utc).strftime("%Y-%m-%d")
     excluded_geometries = excluded_geometries or set()
@@ -97,41 +175,49 @@ def find_new_scenes(
     s2 = ee.ImageCollection(S2_COLLECTION).filterBounds(aoi).filterDate(since_date, until_date)
 
     scenes: list[dict] = []
-    for collection, sensor in ((s1, "S1"), (s2, "S2")):
-        covering = collection.map(
-            lambda img: img.set(
-                "covers_aoi", img.geometry().contains(aoi, ee.ErrorMargin(100))
-            )
-        ).filter(ee.Filter.eq("covers_aoi", True))
 
-        ids = covering.aggregate_array("system:index").getInfo()
-        millis = covering.aggregate_array("system:time_start").getInfo()
-        if sensor == "S1":
-            passes = covering.aggregate_array("orbitProperties_pass").getInfo()
-            orbits = covering.aggregate_array("relativeOrbitNumber_start").getInfo()
-        else:
-            passes = [None] * len(ids)
-            orbits = [None] * len(ids)
+    covering_s1 = s1.map(
+        lambda img: img.set("covers_aoi", img.geometry().contains(aoi, ee.ErrorMargin(100)))
+    ).filter(ee.Filter.eq("covers_aoi", True))
+    ids = covering_s1.aggregate_array("system:index").getInfo()
+    millis = covering_s1.aggregate_array("system:time_start").getInfo()
+    passes = covering_s1.aggregate_array("orbitProperties_pass").getInfo()
+    orbits = covering_s1.aggregate_array("relativeOrbitNumber_start").getInfo()
+    for scene_id, ts, orbit_pass, relative_orbit in zip(ids, millis, passes, orbits):
+        if ("S1", scene_id) in processed_scene_ids:
+            continue
+        if (orbit_pass, relative_orbit) in excluded_geometries:
+            continue
+        date = _ts_to_date(ts)
+        if excluded_months and _dt.date.fromisoformat(date).month in excluded_months:
+            continue
+        scenes.append(
+            {
+                "sensor": "S1",
+                "scene_id": scene_id,
+                "date": date,
+                "orbit_pass": orbit_pass,
+                "relative_orbit": relative_orbit,
+                "s2_tile_ids": None,
+            }
+        )
 
-        for scene_id, ts, orbit_pass, relative_orbit in zip(ids, millis, passes, orbits):
-            if (sensor, scene_id) in processed_scene_ids:
-                continue
-            if sensor == "S1" and (orbit_pass, relative_orbit) in excluded_geometries:
-                continue
-            date = _dt.datetime.fromtimestamp(ts / 1000, tz=_dt.timezone.utc).strftime(
-                "%Y-%m-%d"
-            )
-            if excluded_months and _dt.date.fromisoformat(date).month in excluded_months:
-                continue
-            scenes.append(
-                {
-                    "sensor": sensor,
-                    "scene_id": scene_id,
-                    "date": date,
-                    "orbit_pass": orbit_pass,
-                    "relative_orbit": relative_orbit,
-                }
-            )
+    for group in s2_covering_groups(s2, aoi):
+        scene_id = "+".join(group["scene_ids"])
+        if ("S2", scene_id) in processed_scene_ids:
+            continue
+        if excluded_months and _dt.date.fromisoformat(group["date"]).month in excluded_months:
+            continue
+        scenes.append(
+            {
+                "sensor": "S2",
+                "scene_id": scene_id,
+                "date": group["date"],
+                "orbit_pass": None,
+                "relative_orbit": None,
+                "s2_tile_ids": group["scene_ids"],
+            }
+        )
 
     return scenes
 
@@ -220,30 +306,45 @@ def measure_water_area_sar(
     }
 
 
+def _cloud_probability_image(scene_ids: list[str]) -> ee.Image | None:
+    """s2cloudless cloud-probability image for one S2 scene group: the matching single image for
+    a bare scene id, or a mosaic of each constituent tile's cloud-probability image for a
+    multi-tile group (see s2_covering_groups/build_s2_mosaic) so it stays pixel-aligned with the
+    S2 mosaic it's screening.
+
+    Returns None if none of `scene_ids` has a matching s2cloudless image (seen on older
+    Sentinel-2 scenes, mostly pre-~2019, when calibrating against a multi-year lookback --
+    Stage 1's own 14-day default lookback never surfaced this) rather than crashing on an empty
+    mosaic.
+    """
+    matches = ee.ImageCollection(S2_CLOUD_PROBABILITY_COLLECTION).filter(
+        ee.Filter.inList("system:index", scene_ids)
+    )
+    if matches.size().getInfo() == 0:
+        return None
+    return matches.mosaic().select("probability")
+
+
 def s2_cloud_fraction(
-    image: ee.Image,
+    scene_ids: list[str],
     aoi_geometry: ee.Geometry,
     cloud_prob_threshold: float = 40,
     scale: int = 10,
 ) -> float | None:
-    """Fraction (0-1) of `aoi_geometry` classified cloudy in `image`, per s2cloudless.
+    """Fraction (0-1) of `aoi_geometry` classified cloudy per s2cloudless, for one S2 scene group
+    (`scene_ids`: a single tile id, or several same-date tile ids for a multi-tile group -- see
+    s2_covering_groups).
 
     Shared between measure_water_area_optical (to gate scene acceptance) and the SAR
     Threshold Calibration step (to gate which S2/Dynamic World dates are usable as a
     calibration target) — see ProjectPlan.docx Stage 1.
 
-    Returns None if no s2cloudless image exists for this scene (seen on older Sentinel-2
-    scenes, mostly pre-~2019, when calibrating against a multi-year lookback — Stage 1's own
-    14-day default lookback never surfaced this) rather than crashing on a null `.first()`.
+    Returns None if no s2cloudless image exists for any of `scene_ids` (see
+    _cloud_probability_image) rather than crashing.
     """
-    scene_index = image.get("system:index")
-    matches = ee.ImageCollection(S2_CLOUD_PROBABILITY_COLLECTION).filter(
-        ee.Filter.eq("system:index", scene_index)
-    )
-    if matches.size().getInfo() == 0:
+    cloud_prob = _cloud_probability_image(scene_ids)
+    if cloud_prob is None:
         return None
-
-    cloud_prob = matches.first().select("probability")
     cloudy = cloud_prob.gt(cloud_prob_threshold).rename("cloudy")
     return ee.Number(
         cloudy.reduceRegion(
@@ -294,6 +395,8 @@ def scl_bad_fraction(image: ee.Image, aoi_geometry: ee.Geometry, scale: int = 10
 
 def measure_water_area_optical(
     image: ee.Image,
+    scene_ids: list[str],
+    date_str: str,
     aoi_geometry: ee.Geometry,
     cloud_prob_threshold: float = DEFAULT_CLOUD_PROB_THRESHOLD,
     max_cloud_fraction: float = DEFAULT_MAX_CLOUD_FRACTION,
@@ -304,13 +407,18 @@ def measure_water_area_optical(
 ) -> dict | None:
     """Water surface area (m^2) from a Sentinel-2 SR image, per ProjectPlan.docx Stage 1.
 
+    `image` is the scene to measure -- build via build_s2_mosaic(scene_ids), which handles both
+    a single tile and a multi-tile mosaic (see s2_covering_groups, motivated by FOL). `scene_ids`
+    and `date_str` are passed explicitly rather than read off `image`'s own properties, because
+    mosaic() doesn't carry those over.
+
     Returns None (skip this scene) if more than `max_cloud_fraction` of the AOI is cloudy per
     s2cloudless, if MODIS MAIAC aerosol optical depth exceeds `max_aod` (smoke/haze the cloud
     screen misses, see aod_value), or if more than `max_scl_bad_fraction` of the AOI falls in a
     contaminated Sentinel-2 Scene Classification class -- thin cirrus in particular, which
     s2cloudless also misses (see scl_bad_fraction) -- rather than measuring through any of them.
     """
-    cloud_fraction = s2_cloud_fraction(image, aoi_geometry, cloud_prob_threshold, scale)
+    cloud_fraction = s2_cloud_fraction(scene_ids, aoi_geometry, cloud_prob_threshold, scale)
     if cloud_fraction is None or cloud_fraction > max_cloud_fraction:
         return None
 
@@ -318,18 +426,11 @@ def measure_water_area_optical(
     if bad_fraction is not None and bad_fraction > max_scl_bad_fraction:
         return None
 
-    date_str = ee.Date(image.get("system:time_start")).format("YYYY-MM-dd").getInfo()
     aod = aod_value(aoi_geometry, date_str)
     if aod is not None and aod > max_aod:
         return None
 
-    scene_index = image.get("system:index")
-    cloud_prob = (
-        ee.ImageCollection(S2_CLOUD_PROBABILITY_COLLECTION)
-        .filter(ee.Filter.eq("system:index", scene_index))
-        .first()
-        .select("probability")
-    )
+    cloud_prob = _cloud_probability_image(scene_ids)
     clear = cloud_prob.lte(cloud_prob_threshold)
     ndwi = image.normalizedDifference(["B3", "B8"]).rename("ndwi")
     water = ndwi.gt(ndwi_threshold).And(clear).rename("water")

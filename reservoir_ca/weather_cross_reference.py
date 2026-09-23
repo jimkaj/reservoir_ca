@@ -24,8 +24,12 @@ import numpy as np
 import pandas as pd
 
 from reservoir_ca.config import Reservoir
-from reservoir_ca.sar_threshold_calibration import S1_COLLECTION, S2_COLLECTION, pair_s1_s2_dates
-from reservoir_ca.stage1_query_measure import measure_water_area_optical, measure_water_area_sar
+from reservoir_ca.sar_threshold_calibration import S1_COLLECTION, pair_s1_s2_dates
+from reservoir_ca.stage1_query_measure import (
+    build_s2_mosaic,
+    measure_water_area_optical,
+    measure_water_area_sar,
+)
 
 ERA5_LAND_COLLECTION = "ECMWF/ERA5_LAND/HOURLY"
 WIND_SEARCH_WINDOW_HOURS = 3  # nearest available hourly reanalysis image within this window
@@ -95,12 +99,12 @@ def per_date_series(
     rows = []
     for pair in pairs:
         s1_image = ee.Image(f"{S1_COLLECTION}/{pair['s1_scene_id']}")
-        s2_image = ee.Image(f"{S2_COLLECTION}/{pair['s2_scene_id']}")
+        s2_image = build_s2_mosaic(pair["s2_tile_ids"])
 
         sar_result = measure_water_area_sar(
             s1_image, aoi, calibrated_threshold_db=threshold_db, band=band
         )
-        optical_result = measure_water_area_optical(s2_image, aoi)
+        optical_result = measure_water_area_optical(s2_image, pair["s2_tile_ids"], pair["s2_date"], aoi)
         if optical_result is None:
             continue
 

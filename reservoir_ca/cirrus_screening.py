@@ -30,7 +30,7 @@ import pandas as pd
 from reservoir_ca.config import Reservoir
 from reservoir_ca.stage1_query_measure import (
     DEFAULT_MAX_SCL_BAD_FRACTION,
-    S2_COLLECTION,
+    build_s2_mosaic,
     scl_bad_fraction,
 )
 
@@ -65,7 +65,9 @@ def screen_ledger_for_cirrus(
         if reservoir is None:
             continue
         aoi = ee.Geometry(reservoir.aoi_geometry())
-        image = ee.Image(f"{S2_COLLECTION}/{row['scene_id']}")
+        # row["scene_id"] may be several "+"-joined tile ids for a multi-tile mosaic scene (see
+        # stage1_query_measure.s2_covering_groups) -- split back into a list either way.
+        image = build_s2_mosaic(row["scene_id"].split("+"))
         bad_fraction = scl_bad_fraction(image, aoi)
         corrected.loc[idx, "scl_bad_fraction"] = bad_fraction
         if bad_fraction is not None and bad_fraction > max_scl_bad_fraction:

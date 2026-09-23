@@ -76,12 +76,16 @@ def main() -> None:
 
     gee_auth.initialize(project=args.project)
 
-    reservoirs = config.load_reservoirs()
     if args.reservoir:
+        # Same fix as main.py's --reservoir handling: naming a reservoir explicitly should work
+        # even for an excluded one (e.g. FOL, kept out of the default fleet run/calibration by a
+        # Stage 1 imagery-coverage bug rather than a measurement-quality problem).
+        reservoirs = config.load_reservoirs(include_excluded=True)
         reservoirs = [r for r in reservoirs if r.cdec_station_id == args.reservoir]
         if not reservoirs:
             raise SystemExit(f"No reservoir with cdec_station_id={args.reservoir!r}")
     else:
+        reservoirs = config.load_reservoirs()
         # Larger AOIs cost more per Earth Engine call; starting the slowest reservoirs first
         # lets them run alongside the long tail of small, fast ones instead of stalling the
         # whole run at the end.

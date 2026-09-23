@@ -104,13 +104,17 @@ def main() -> None:
                     relative_orbit=scene["relative_orbit"],
                 )
             else:
-                image = ee.Image(f"{s1qm.S2_COLLECTION}/{scene['scene_id']}")
-                result = s1qm.measure_water_area_optical(image, aoi)
+                # scene["scene_id"] may be several "+"-joined tile ids for an AOI that straddles
+                # an MGRS tile boundary (see s2_covering_groups) -- s2_tile_ids carries the list
+                # to build from; a single-tile scene has s2_tile_ids == [scene_id].
+                tile_ids = scene["s2_tile_ids"]
+                image = s1qm.build_s2_mosaic(tile_ids)
+                result = s1qm.measure_water_area_optical(image, tile_ids, scene["date"], aoi)
                 if result is None:
                     # measure_water_area_optical() collapses every rejection reason to None;
                     # cheaply recompute each check here just to log which one it was (otherwise
                     # invisible in the ledger).
-                    cloud_fraction = s1qm.s2_cloud_fraction(image, aoi)
+                    cloud_fraction = s1qm.s2_cloud_fraction(tile_ids, aoi)
                     if cloud_fraction is not None and cloud_fraction > s1qm.DEFAULT_MAX_CLOUD_FRACTION:
                         reason, method = "too cloudy", "skipped_cloudy"
                     else:

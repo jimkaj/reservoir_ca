@@ -40,8 +40,10 @@ from reservoir_ca.stage1_query_measure import (
     S1_COLLECTION,
     S2_COLLECTION,
     aod_value,
+    build_s2_mosaic,
     measure_water_area_optical,
     s2_cloud_fraction,
+    s2_covering_groups,
     scl_bad_fraction,
 )
 
@@ -87,10 +89,12 @@ def pair_s1_s2_dates(
 ) -> list[dict]:
     """Pair each Sentinel-1 acquisition with its nearest usable Sentinel-2 date.
 
-    A usable S2 date is within `match_window_days` of the S1 date, fully covers the AOI, has
-    AOI cloud cover (per s2cloudless) at or below `max_cloud_fraction`, aerosol optical depth
-    (per MODIS MAIAC, see stage1_query_measure.aod_value -- catches smoke/haze the cloud screen
-    alone misses) at or below `max_aod`, and Sentinel-2 Scene Classification contamination (per
+    A usable S2 date is within `match_window_days` of the S1 date, fully covers the AOI (possibly
+    as a mosaic of several same-date tiles, for an AOI that straddles an MGRS tile boundary --
+    see stage1_query_measure.s2_covering_groups, motivated by FOL), has AOI cloud cover (per
+    s2cloudless) at or below `max_cloud_fraction`, aerosol optical depth (per MODIS MAIAC, see
+    stage1_query_measure.aod_value -- catches smoke/haze the cloud screen alone misses) at or
+    below `max_aod`, and Sentinel-2 Scene Classification contamination (per
     stage1_query_measure.scl_bad_fraction -- catches thin cirrus that neither the cloud screen
     nor AOD catch) at or below `max_scl_bad_fraction`. Candidates are tried nearest-date-first;
     a rejected S2 date is skipped in favor of the next nearest, rather than failing the whole
@@ -114,17 +118,7 @@ def pair_s1_s2_dates(
         .filter(ee.Filter.listContains("transmitterReceiverPolarisation", "VV"))
         .filter(ee.Filter.listContains("transmitterReceiverPolarisation", "VH"))
     )
-    s2 = _covering(
-        ee.ImageCollection(S2_COLLECTION).filterBounds(aoi).filterDate(since_date, until_date)
-    )
-
-    def _dated(collection: ee.ImageCollection) -> list[tuple[str, _dt.date]]:
-        ids = collection.aggregate_array("system:index").getInfo()
-        millis = collection.aggregate_array("system:time_start").getInfo()
-        return [
-            (scene_id, _dt.datetime.fromtimestamp(ms / 1000, tz=_dt.timezone.utc).date())
-            for scene_id, ms in zip(ids, millis)
-        ]
+    s2_raw = ee.ImageCollection(S2_COLLECTION).filterBounds(aoi).filterDate(since_date, until_date)
 
     def _dated_s1(collection: ee.ImageCollection) -> list[tuple[str, _dt.date, str, int]]:
         ids = collection.aggregate_array("system:index").getInfo()
@@ -142,23 +136,26 @@ def pair_s1_s2_dates(
         ]
 
     s1_dated = _dated_s1(s1)
-    s2_dated = _dated(s2)
+    s2_dated = [
+        (group["scene_ids"], _dt.date.fromisoformat(group["date"]))
+        for group in s2_covering_groups(s2_raw, aoi)
+    ]
 
     pairs: list[dict] = []
     for s1_id, s1_date, orbit_pass, relative_orbit in s1_dated:
         candidates = sorted(
             (
-                (scene_id, s2_date)
-                for scene_id, s2_date in s2_dated
+                (scene_ids, s2_date)
+                for scene_ids, s2_date in s2_dated
                 if abs((s2_date - s1_date).days) <= match_window_days
             ),
             key=lambda c: abs((c[1] - s1_date).days),
         )
-        for s2_id, s2_date in candidates:
-            image = ee.Image(f"{S2_COLLECTION}/{s2_id}")
-            cloud_fraction = s2_cloud_fraction(image, aoi, cloud_prob_threshold)
+        for scene_ids, s2_date in candidates:
+            cloud_fraction = s2_cloud_fraction(scene_ids, aoi, cloud_prob_threshold)
             if cloud_fraction is None or cloud_fraction > max_cloud_fraction:
                 continue
+            image = build_s2_mosaic(scene_ids)
             bad_fraction = scl_bad_fraction(image, aoi)
             if bad_fraction is not None and bad_fraction > max_scl_bad_fraction:
                 continue
@@ -171,7 +168,8 @@ def pair_s1_s2_dates(
                     "s1_date": s1_date.isoformat(),
                     "orbit_pass": orbit_pass,
                     "relative_orbit": relative_orbit,
-                    "s2_scene_id": s2_id,
+                    "s2_scene_id": "+".join(scene_ids),
+                    "s2_tile_ids": scene_ids,
                     "s2_date": s2_date.isoformat(),
                     "day_gap": abs((s2_date - s1_date).days),
                 }
@@ -304,9 +302,14 @@ def _optical_area_m2(aoi: ee.Geometry, pair: dict) -> float | None:
     cloud cover (shouldn't normally happen, since pair_s1_s2_dates already screened for that,
     but the gate is re-checked here rather than assumed).
     """
-    image = ee.Image(f"{S2_COLLECTION}/{pair['s2_scene_id']}")
+    image = build_s2_mosaic(pair["s2_tile_ids"])
     result = measure_water_area_optical(
-        image, aoi, cloud_prob_threshold=CLOUD_PROB_THRESHOLD, max_cloud_fraction=MAX_CLOUD_FRACTION
+        image,
+        pair["s2_tile_ids"],
+        pair["s2_date"],
+        aoi,
+        cloud_prob_threshold=CLOUD_PROB_THRESHOLD,
+        max_cloud_fraction=MAX_CLOUD_FRACTION,
     )
     return result["area_m2"] if result is not None else None
 
