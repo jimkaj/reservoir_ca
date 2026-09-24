@@ -1,5 +1,11 @@
 cdec_station_id,orbit_pass,relative_orbit,reason,n_samples,fraction_biased,mean_log_error,excluded_at
-BRD,ASCENDING,137,recalibration area-ratio validation error 0.306 above 0.140 (IoU diagnostic: 0.799); DESCENDING/42 clears the bar and remains available,,,,2026-09-21T21:01:45.440233+00:00
-BRD,DESCENDING,144,recalibration area-ratio validation error 0.299 above 0.140 (IoU diagnostic: 0.852); DESCENDING/42 clears the bar and remains available,,,,2026-09-21T21:01:45.440233+00:00
-LBS,ASCENDING,35,recalibration area-ratio validation error 0.222 above 0.140 (IoU diagnostic: 0.595); DESCENDING/42 clears the bar and remains available,,,,2026-09-22T23:52:41.887840+00:00
-LBS,ASCENDING,137,recalibration area-ratio validation error 0.218 above 0.140 (IoU diagnostic: 0.587); DESCENDING/42 clears the bar and remains available,,,,2026-09-22T23:52:41.887840+00:00
+BRD,ASCENDING,137.0,recalibration area-ratio validation error 0.306 above 0.140 (IoU diagnostic: 0.799); DESCENDING/42 clears the bar and remains available,,,,2026-09-21T21:01:45.440233+00:00
+BRD,DESCENDING,144.0,recalibration area-ratio validation error 0.299 above 0.140 (IoU diagnostic: 0.852); DESCENDING/42 clears the bar and remains available,,,,2026-09-21T21:01:45.440233+00:00
+LBS,ASCENDING,35.0,recalibration area-ratio validation error 0.222 above 0.140 (IoU diagnostic: 0.595); DESCENDING/42 clears the bar and remains available,,,,2026-09-22T23:52:41.887840+00:00
+LBS,ASCENDING,137.0,recalibration area-ratio validation error 0.218 above 0.140 (IoU diagnostic: 0.587); DESCENDING/42 clears the bar and remains available,,,,2026-09-22T23:52:41.887840+00:00
+WHI,ASCENDING,35.0,recalibration area-ratio validation error 0.152 above 0.140 (IoU diagnostic: 0.906) -- elevated tier review 2026-09-23,93.0,,,2026-09-23T23:34:35.736262+00:00
+PYM,DESCENDING,144.0,recalibration area-ratio validation error 0.211 above 0.140 (IoU diagnostic: 0.805) -- elevated tier review 2026-09-23,93.0,,,2026-09-23T23:34:35.737353+00:00
+PYM,DESCENDING,71.0,recalibration area-ratio validation error 0.185 above 0.140 (IoU diagnostic: 0.852) -- elevated tier review 2026-09-23,89.0,,,2026-09-23T23:34:35.737373+00:00
+PYM,ASCENDING,64.0,recalibration area-ratio validation error 0.229 above 0.140 (IoU diagnostic: 0.809) -- elevated tier review 2026-09-23,86.0,,,2026-09-23T23:34:35.737392+00:00
+HID,ASCENDING,137.0,recalibration area-ratio validation error 0.386 above 0.140 (IoU diagnostic: 0.747) -- elevated tier review 2026-09-23,72.0,,,2026-09-23T23:34:35.738442+00:00
+MIL,ASCENDING,137.0,recalibration area-ratio validation error 0.188 above 0.140 (IoU diagnostic: 0.847) -- elevated tier review 2026-09-23,75.0,,,2026-09-23T23:34:35.739510+00:00
