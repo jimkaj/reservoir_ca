@@ -63,6 +63,30 @@ def _ts_to_date(ts_millis: float) -> str:
     return _dt.datetime.fromtimestamp(ts_millis / 1000, tz=_dt.timezone.utc).strftime("%Y-%m-%d")
 
 
+# A real scene footprint should never come close to this -- ~100,000 km^2, generous margin over
+# the largest legitimate footprint in this pipeline (a Sentinel-1 IW swath, ~42,500 km^2; a
+# Sentinel-2 tile is ~12,000 km^2), but far below a degenerate/global one (~5.1e14 m^2, the whole
+# Earth). Guards against a real GEE catalog defect found during FOL's backfill (2026-09-22/23):
+# scene 20260921T081631_20260921T082016_T39WXT's system:footprint was literally
+# [-Infinity,-Infinity] to [Infinity,Infinity], so `.geometry().contains(aoi, ...)` returned True
+# against ANY AOI on Earth -- it passed FOL's (California) coverage check despite its nominal
+# MGRS tile being in Kazakhstan. Harmless in that instance (caught downstream by the haze gate,
+# logged as "skipped_hazy" -- a misleading reason, but no bad area_m2 reached the ledger), but the
+# coverage check itself shouldn't have passed it.
+MAX_PLAUSIBLE_FOOTPRINT_M2 = 1e11
+
+
+def filter_plausible_footprint(collection: ee.ImageCollection) -> ee.ImageCollection:
+    """Drop scenes whose footprint area exceeds MAX_PLAUSIBLE_FOOTPRINT_M2 -- see its comment.
+
+    Folded into the same server-side map/filter every caller already runs its own coverage check
+    through, so this is one extra area() computation per scene, not an extra round trip.
+    """
+    return collection.map(
+        lambda img: img.set("_footprint_area_m2", img.geometry().area(1))
+    ).filter(ee.Filter.lt("_footprint_area_m2", MAX_PLAUSIBLE_FOOTPRINT_M2))
+
+
 def s2_covering_groups(s2_collection: ee.ImageCollection, aoi: ee.Geometry) -> list[dict]:
     """Group `s2_collection`'s scenes (already filterBounds/filterDate'd to a reservoir's AOI and
     a date window) by acquisition date, and return the ones whose combined footprint fully covers
@@ -85,6 +109,8 @@ def s2_covering_groups(s2_collection: ee.ImageCollection, aoi: ee.Geometry) -> l
     Returns [{"scene_ids": [...], "date": iso_date}, ...] -- `scene_ids` sorted for a stable,
     deterministic group identity (see find_new_scenes, which joins them into one ledger scene_id).
     """
+    s2_collection = filter_plausible_footprint(s2_collection)
+
     single_covering = s2_collection.map(
         lambda img: img.set("covers_aoi", img.geometry().contains(aoi, ee.ErrorMargin(100)))
     ).filter(ee.Filter.eq("covers_aoi", True))
@@ -176,7 +202,7 @@ def find_new_scenes(
 
     scenes: list[dict] = []
 
-    covering_s1 = s1.map(
+    covering_s1 = filter_plausible_footprint(s1).map(
         lambda img: img.set("covers_aoi", img.geometry().contains(aoi, ee.ErrorMargin(100)))
     ).filter(ee.Filter.eq("covers_aoi", True))
     ids = covering_s1.aggregate_array("system:index").getInfo()

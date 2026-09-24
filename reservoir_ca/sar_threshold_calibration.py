@@ -41,6 +41,7 @@ from reservoir_ca.stage1_query_measure import (
     S2_COLLECTION,
     aod_value,
     build_s2_mosaic,
+    filter_plausible_footprint,
     measure_water_area_optical,
     s2_cloud_fraction,
     s2_covering_groups,
@@ -104,7 +105,7 @@ def pair_s1_s2_dates(
     until_date = until_date or _dt.datetime.now(_dt.timezone.utc).strftime("%Y-%m-%d")
 
     def _covering(collection: ee.ImageCollection) -> ee.ImageCollection:
-        return collection.map(
+        return filter_plausible_footprint(collection).map(
             lambda img: img.set(
                 "covers_aoi", img.geometry().contains(aoi, ee.ErrorMargin(100))
             )
