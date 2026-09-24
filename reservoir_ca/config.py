@@ -103,16 +103,22 @@ def load_reservoirs(
 
 def load_processed_scene_ids(
     csv_path: Path = PROCESSED_IMAGERY_CSV,
-) -> set[tuple[str, str]]:
-    """Return the set of (sensor, scene_id) pairs already recorded, so Stage 1 can skip them.
+) -> set[tuple[str, str, str]]:
+    """Return the set of (sensor, scene_id, cdec_station_id) triples already recorded, so Stage 1
+    can skip them.
 
-    Scene IDs are only unique within a given sensor's collection (per ProjectPlan.docx),
-    hence the (sensor, scene_id) pair rather than scene_id alone.
+    Scene IDs are only unique within a given sensor's collection (per ProjectPlan.docx) -- but
+    they're not even unique to one reservoir *within* a sensor: one Sentinel-1 swath or
+    Sentinel-2 tile routinely covers multiple reservoirs' AOIs, so a (sensor, scene_id) pair
+    logged for one reservoir must not make find_new_scenes think a *different* reservoir sharing
+    that same scene has already been measured too -- see the identical lesson learned the hard
+    way during the sar_geometry_evaluation ledger backfill (2026-09-16), which this same
+    dedup-key mistake had not yet been applied to. Hence the station id in the key.
     """
     if not csv_path.exists():
         return set()
     df = pd.read_csv(csv_path)
-    return set(zip(df["sensor"], df["scene_id"]))
+    return set(zip(df["sensor"], df["scene_id"], df["cdec_station_id"]))
 
 
 def append_processed_scene(

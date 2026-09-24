@@ -160,14 +160,17 @@ def build_s2_mosaic(scene_ids: list[str]) -> ee.Image:
 def find_new_scenes(
     reservoir: Reservoir,
     since_date: str,
-    processed_scene_ids: set[tuple[str, str]],
+    processed_scene_ids: set[tuple[str, str, str]],
     until_date: str | None = None,
     excluded_geometries: set[tuple[str, int]] | None = None,
 ) -> list[dict]:
     """Find S1 and S2 scenes covering this reservoir's AOI since `since_date`.
 
-    Excludes scenes already in `processed_scene_ids` (a set of (sensor, scene_id) pairs, per
-    config.load_processed_scene_ids), scenes whose footprint doesn't fully cover the AOI,
+    Excludes scenes already in `processed_scene_ids` (a set of (sensor, scene_id,
+    cdec_station_id) triples, per config.load_processed_scene_ids -- the station id matters
+    because one S1 swath or S2 tile routinely covers multiple reservoirs' AOIs, so a scene_id
+    already logged for a *different* reservoir must not be treated as already-measured for this
+    one), scenes whose footprint doesn't fully cover the AOI,
     -- for S1 -- any scene whose (orbit_pass, relative_orbit) is in `excluded_geometries`
     (station-specific entries from config.load_excluded_geometries; see
     reservoir_ca/sar_geometry_evaluation.py), and -- both sensors -- any scene dated within
@@ -210,7 +213,7 @@ def find_new_scenes(
     passes = covering_s1.aggregate_array("orbitProperties_pass").getInfo()
     orbits = covering_s1.aggregate_array("relativeOrbitNumber_start").getInfo()
     for scene_id, ts, orbit_pass, relative_orbit in zip(ids, millis, passes, orbits):
-        if ("S1", scene_id) in processed_scene_ids:
+        if ("S1", scene_id, reservoir.cdec_station_id) in processed_scene_ids:
             continue
         if (orbit_pass, relative_orbit) in excluded_geometries:
             continue
@@ -230,7 +233,7 @@ def find_new_scenes(
 
     for group in s2_covering_groups(s2, aoi):
         scene_id = "+".join(group["scene_ids"])
-        if ("S2", scene_id) in processed_scene_ids:
+        if ("S2", scene_id, reservoir.cdec_station_id) in processed_scene_ids:
             continue
         if excluded_months and _dt.date.fromisoformat(group["date"]).month in excluded_months:
             continue
