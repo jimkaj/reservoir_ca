@@ -15,7 +15,9 @@ smoke-test writeup. This is a sequential pipeline, not an agent system: Stage 1 
 
 Earth Engine auth (once per machine): `earthengine authenticate`. Every script below takes
 `--project <gcp-project-id>` (or set `GEE_PROJECT`); the project used in development is
-`reservoir-ca`. Install with `pip install -e .` (not `uv` — see Gotchas).
+`reservoir-ca`. Dependencies are managed with `uv`: `uv sync` builds `.venv` from `uv.lock`,
+`uv add <pkg>` adds one. Prefix the commands below with `uv run` (e.g. `uv run python main.py ...`)
+or activate `.venv` first.
 
 ```bash
 # Stage 1: query + measure new scenes for all monitored reservoirs since a date
@@ -106,9 +108,11 @@ new disagreement needs a new root cause.
   assuming a code bug.
 - **This machine (dev environment) runs an antivirus TLS-inspection proxy** that breaks Python's
   bundled CA bundle for any `requests`/`urllib3` call, including `ee.Initialize()`/
-  `ee.Authenticate()`. Fixed by `pip install pip-system-certs`. `uv` hits a separate, unfixed TLS
-  failure under the same proxy, so this repo is installed with `pip` despite `pyproject.toml`'s
-  `uv`-style layout.
+  `ee.Authenticate()`. Handled by `pip-system-certs` (a Windows-only project dependency), which
+  makes Python use the Windows certificate store. `uv` itself trusts the proxy via the
+  `UV_SYSTEM_CERTS=true` user env var. Do **not** set `SSL_CERT_FILE` to a hand-built bundle:
+  Norton regenerates its root CA (it did on 2026-09-09), and a stale copy with the same name makes
+  uv fail with `invalid peer certificate: BadSignature`.
 - **`ee.ImageCollection.geometry().contains(aoi, ...)` can return `True` for a corrupted GEE
   catalog scene** whose footprint is a degenerate global polygon (`[-Infinity,-Infinity]` to
   `[Infinity,Infinity]`) — seen on a real Sentinel-2 scene. Every coverage check in this codebase

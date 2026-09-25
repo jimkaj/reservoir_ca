@@ -1,10 +1,12 @@
 [project]
 name = "reservoir-ca"
 version = "0.1.0"
-description = "Add your description here"
+description = "Estimate California reservoir storage from Sentinel-1/Sentinel-2 imagery via Google Earth Engine"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "earthengine-api>=1.0.0",
+    "numpy>=2.0.0",
     "pandas>=2.0.0",
+    "pip-system-certs>=5.0 ; sys_platform == 'win32'",
 ]
