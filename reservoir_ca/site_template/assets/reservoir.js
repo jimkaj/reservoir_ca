@@ -55,7 +55,7 @@
     // Dashed (as on the home page) so it can't be mistaken for the solid grey CDEC line.
     refs: [{ value: data.capacity_af, label: `Capacity ${formatAF(data.capacity_af)}`, dashed: true }],
     legendOrder: ["s1", "s2", "estimate", "cdec"],
-    format: formatAF, zeroBased: true, height: 320,
+    format: formatAF, height: 320,
     ariaLabel: `Estimated volume of ${data.name} over time from Sentinel-1 and Sentinel-2, with CDEC reported storage and capacity`,
   });
   const areaChart = new TimeChart(document.getElementById("area-chart"), {

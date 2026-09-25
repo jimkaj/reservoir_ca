@@ -58,7 +58,7 @@
   }
 
   // options: {series: [{key, label, kind: "line"|"dots", cssVar, data: [[isoDate, value, note?]]}],
-  //           refs: [{value, label, dashed?}], format: v => string, height, zeroBased, ariaLabel,
+  //           refs: [{value, label, dashed?}], format: v => string, height, ariaLabel,
   //           legendOrder?: [series key, ...]}  -- series draw in array order (first = bottom);
   //           legendOrder only reorders the legend.
   function TimeChart(container, options) {
@@ -151,16 +151,27 @@
     const m = { top: 12, right: 16, bottom: 28, left: 60 };
     const [t0, t1] = this.domain();
     const visible = this.series.map((s) => s.points.filter((p) => p.t >= t0 && p.t <= t1));
+    // Y-axis fitted tightly to the visible data (no forced zero). Rejected points don't widen it
+    // -- one collapsed scene would otherwise stretch the axis -- and are pinned to the edge when
+    // off-scale. A reference line (capacity) widens it only when it's within REF_REACH of the
+    // data; further away it's marked at the top edge instead of drawn.
+    const REF_REACH = 0.3;
     let vmin = Infinity, vmax = -Infinity;
-    visible.forEach((pts) => pts.forEach((p) => { vmin = Math.min(vmin, p.v); vmax = Math.max(vmax, p.v); }));
-    for (const r of this.opts.refs || []) vmax = Math.max(vmax, r.value);
-    if (this.opts.zeroBased) vmin = 0;
-    else { const pad = (vmax - vmin) * 0.08 || vmax * 0.05; vmin -= pad; vmax += pad; }
+    visible.forEach((pts) => pts.forEach((p) => {
+      if (p.rejected) return;
+      vmin = Math.min(vmin, p.v); vmax = Math.max(vmax, p.v);
+    }));
+    if (!isFinite(vmin)) { vmin = 0; vmax = 1; }
+    const dataMax = vmax;
+    const refs = (this.opts.refs || []).map((r) => ({ ...r, inRange: r.value <= dataMax * (1 + REF_REACH) }));
+    for (const r of refs) if (r.inRange) vmax = Math.max(vmax, r.value);
+    const pad = (vmax - vmin) * 0.06 || Math.abs(vmax) * 0.05 || 1;
+    vmin -= pad;
+    vmax += pad;
     const step = niceStep(vmax - vmin, 5);
-    vmin = Math.floor(vmin / step) * step;
-    vmax = Math.ceil((vmax * 1.02) / step) * step;
     const x = (t) => m.left + ((t - t0) / Math.max(t1 - t0, DAY)) * (width - m.left - m.right);
-    const y = (v) => m.top + (1 - (v - vmin) / (vmax - vmin)) * (height - m.top - m.bottom);
+    const clamp = (v) => Math.min(vmax, Math.max(vmin, v));
+    const y = (v) => m.top + (1 - (clamp(v) - vmin) / (vmax - vmin)) * (height - m.top - m.bottom);
 
     if (this.svg) this.svg.remove();
     const svg = el("svg", {
@@ -171,7 +182,7 @@
     this.svg = svg;
 
     const grid = el("g", { class: "grid" }, svg);
-    for (let v = vmin; v <= vmax + step / 2; v += step) {
+    for (let v = Math.ceil(vmin / step) * step; v <= vmax; v += step) {
       el("line", { x1: m.left, x2: width - m.right, y1: y(v), y2: y(v), class: v === 0 ? "baseline" : "gridline" }, grid);
       el("text", { x: m.left - 8, y: y(v), class: "tick tick-y", "dominant-baseline": "middle", "text-anchor": "end" }, grid)
         .textContent = this.opts.format(v, true);
@@ -180,9 +191,14 @@
       el("text", { x: x(tick.t), y: height - 8, class: "tick", "text-anchor": "middle" }, grid).textContent = tick.label;
     }
 
-    for (const r of this.opts.refs || []) {
-      el("line", { x1: m.left, x2: width - m.right, y1: y(r.value), y2: y(r.value), class: r.dashed ? "refline refline-dashed" : "refline" }, svg);
-      el("text", { x: width - m.right, y: y(r.value) - 6, class: "reflabel", "text-anchor": "end" }, svg).textContent = r.label;
+    for (const r of refs) {
+      if (r.inRange) {
+        el("line", { x1: m.left, x2: width - m.right, y1: y(r.value), y2: y(r.value), class: r.dashed ? "refline refline-dashed" : "refline" }, svg);
+        el("text", { x: width - m.right, y: y(r.value) - 6, class: "reflabel", "text-anchor": "end" }, svg).textContent = r.label;
+      } else {
+        el("text", { x: width - m.right, y: m.top + 4, class: "reflabel", "text-anchor": "end", "dominant-baseline": "hanging" }, svg)
+          .textContent = `${r.label} (above chart range)`;
+      }
     }
 
     this.series.forEach((s, i) => {
@@ -193,7 +209,8 @@
         if (pts.length) el("path", { d: pts.map((p, j) => `${j ? "L" : "M"}${x(p.t).toFixed(1)},${y(p.v).toFixed(1)}`).join("") }, g);
       } else {
         for (const p of pts) {
-          el("circle", { cx: x(p.t).toFixed(1), cy: y(p.v).toFixed(1), r: 4, class: p.rejected ? "rejected" : "" }, g);
+          const dot = el("circle", { cx: x(p.t).toFixed(1), cy: y(p.v).toFixed(1), r: 4, class: p.rejected ? "rejected" : "" }, g);
+          if (p.v < vmin || p.v > vmax) el("title", {}, dot).textContent = "Off scale (pinned to the edge); the tooltip shows its value";
         }
       }
     });
