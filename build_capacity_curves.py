@@ -62,11 +62,13 @@ def main() -> None:
             stale_path = cc.capacity_curve_path(reservoir.cdec_station_id)
             if stale_path.exists():
                 stale_path.unlink()
+            cc.update_fit_metadata(reservoir.cdec_station_id, None)
             if pd.notna(reservoir_list_df.loc[idx, "capacity_curve_path"]):
                 reservoir_list_df.loc[idx, "capacity_curve_path"] = None
                 changed = True
             continue
         cc.save_capacity_curve(reservoir.cdec_station_id, curve)
+        cc.update_fit_metadata(reservoir.cdec_station_id, curve.attrs["fit_metadata"])
         reservoir_list_df.loc[idx, "capacity_curve_path"] = (
             f"capacity_curves/{reservoir.cdec_station_id}.csv"
         )

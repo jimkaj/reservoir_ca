@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>California Reservoir Storage</title>
+<meta name="description" content="Storage in California reservoirs estimated from Sentinel-1 and Sentinel-2 satellite imagery.">
+<link rel="stylesheet" href="$leaflet_css">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<header class="site"><div class="inner">
+  <a class="brand" href="index.html">California Reservoir Storage</a>
+  <span class="crumb">Estimated from satellite imagery</span>
+</div></header>
+<main>
+  <h1>How much water is in California's reservoirs?</h1>
+  <p class="subtitle">Water surface area measured from Sentinel-1 radar and Sentinel-2 optical imagery, converted to volume for $n_reservoirs reservoirs.</p>
+
+  <section class="stats" aria-label="Current totals">
+    <div class="stat hero">
+      <div class="label">Total estimated volume</div>
+      <div class="value">$total_volume</div>
+      <div class="detail">latest observation $latest_observation</div>
+    </div>
+    <div class="stat">
+      <div class="label">Share of combined capacity</div>
+      <div class="value">$percent_full</div>
+      <div class="detail">of $total_capacity</div>
+    </div>
+    <div class="stat">
+      <div class="label">Reservoirs tracked</div>
+      <div class="value">$n_reservoirs</div>
+      <div class="detail">each observed every few days</div>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="totals-heading">
+    <div class="card-head">
+      <h2 id="totals-heading">Total volume over time</h2>
+    </div>
+    <div id="range"></div>
+    <div id="total-volume-chart"></div>
+    <p class="note">Each day's total adds up every reservoir's most recent estimate, whether it was observed that day or a few days earlier, so a reservoir's contribution changes only when a new image of it is processed. The series starts $totals_start, the first date every tracked reservoir had been observed.</p>
+    <h2 style="margin-top:20px">Total water surface area</h2>
+    <div id="total-area-chart"></div>
+  </section>
+
+  <section class="card" aria-labelledby="map-heading">
+    <div class="card-head">
+      <h2 id="map-heading">Reservoirs</h2>
+      <span class="muted">Blue fill shows how full each reservoir is; the number is its current volume. Select one for details.</span>
+    </div>
+    <div id="map" class="map" role="region" aria-label="Map of tracked reservoirs"></div>
+  </section>
+
+  <section class="card" aria-labelledby="table-heading">
+    <h2 id="table-heading">All tracked reservoirs</h2>
+    <div class="table-scroll">
+      <table id="reservoir-table">
+        <thead><tr><th>Reservoir</th><th class="num">Current volume</th><th class="num">Full</th><th class="num">Capacity</th><th>Last observed</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="about-heading">
+    <h2 id="about-heading">About these estimates</h2>
+    <p class="note">Each reservoir's water surface area is measured from Sentinel-1 radar (which sees through cloud) and Sentinel-2 optical imagery, both processed in Google Earth Engine. Area is converted to volume with a curve fit for each reservoir by pairing past area measurements with the storage the California Data Exchange Center (CDEC) reported on the same day. Radar and optical estimates of the same reservoir can differ by several percent, so the totals move a little from day to day as new images arrive.</p>
+  </section>
+</main>
+<footer class="site">Updated $generated_at · <a href="$repo_url">Source code</a> · Contains modified Copernicus Sentinel data.</footer>
+<script type="application/json" id="site-data">$data</script>
+<script src="$leaflet_js"></script>
+<script src="assets/charts.js"></script>
+<script src="assets/home.js"></script>
+</body>
+</html>

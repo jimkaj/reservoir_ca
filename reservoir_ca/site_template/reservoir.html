@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>$title · California Reservoir Storage</title>
+<meta name="description" content="Storage in $title estimated from Sentinel-1 and Sentinel-2 satellite imagery.">
+<link rel="stylesheet" href="$leaflet_css">
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+<header class="site"><div class="inner">
+  <a class="brand" href="../index.html">California Reservoir Storage</a>
+  <span class="crumb">$title</span>
+</div></header>
+<main>
+  <a class="back-link" href="../index.html"><span aria-hidden="true">←</span> Back to all reservoirs</a>
+  <h1>$title</h1>
+  <p class="subtitle">$subtitle</p>
+
+  <section class="stats" aria-label="Current status">
+    <div class="stat">
+      <div class="label">Estimated volume</div>
+      <div class="value">$volume</div>
+      <div class="detail">$percent_full of capacity</div>
+    </div>
+    <div class="stat">
+      <div class="label">Capacity</div>
+      <div class="value">$capacity</div>
+    </div>
+    <div class="stat">
+      <div class="label">Last observed</div>
+      <div class="value">$latest_date</div>
+      <div class="detail">$latest_sensors</div>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="image-heading">
+    <div class="card-head"><h2 id="image-heading">Satellite view</h2></div>
+    <div class="toggles">
+      <button type="button" data-layer="mask" aria-pressed="true"><span class="swatch swatch-mask"></span>Latest water mask</button>
+      <button type="button" data-layer="aoi" aria-pressed="false"><span class="swatch swatch-aoi"></span>Measurement area (AOI)</button>
+    </div>
+    <div id="reservoir-map" class="map reservoir-map" role="region" aria-label="Satellite image of $title"></div>
+    <p class="note">$mask_caption $rep_caption The measurement area is the outline within which water is counted.</p>
+  </section>
+
+  <section class="card" aria-labelledby="volume-heading">
+    <div id="range"></div>
+    <h2 id="volume-heading">Volume over time</h2>
+    <div id="volume-chart"></div>
+    <p class="note">$cdec_note</p>
+    <h2 style="margin-top:20px">Water surface area</h2>
+    <div id="area-chart"></div>
+  </section>
+</main>
+<footer class="site">Updated $generated_at · <a href="../index.html">All reservoirs</a> · <a href="$repo_url">Source code</a> · Contains modified Copernicus Sentinel data.</footer>
+<script type="application/json" id="site-data">$data</script>
+<script src="$leaflet_js"></script>
+<script src="../assets/charts.js"></script>
+<script src="../assets/reservoir.js"></script>
+</body>
+</html>

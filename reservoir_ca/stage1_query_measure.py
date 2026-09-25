@@ -286,6 +286,33 @@ def _otsu_threshold(histogram: ee.Dictionary) -> ee.Number:
     return means.sort(bss).get([-1])
 
 
+def water_area_m2(water: ee.Image, aoi_geometry: ee.Geometry, scale: int = 10) -> ee.Number:
+    """Server-side area (m^2) of the 1-valued pixels of a single-band "water" mask within the AOI
+    -- the one reducer both sensors' measurements (and Stage 3's mask export check) go through.
+    """
+    return ee.Number(
+        water.multiply(ee.Image.pixelArea())
+        .reduceRegion(
+            reducer=ee.Reducer.sum(),
+            geometry=aoi_geometry,
+            scale=scale,
+            bestEffort=True,
+        )
+        .get("water")
+    )
+
+
+def sar_water_mask(image: ee.Image, band: str, threshold_db: float | ee.Number) -> ee.Image:
+    """Binary "water" mask from a Sentinel-1 image: backscatter below the threshold.
+
+    Shared by measure_water_area_sar and Stage 3's water-mask export
+    (reservoir_ca/stage3_imagery.py), so the published mask is exactly the classification the
+    reported area came from -- the ledger stores band/threshold_db for every S1 row, Otsu
+    fallback included, so a mask can be rebuilt for any logged scene.
+    """
+    return image.select(band).lt(ee.Number(threshold_db)).rename("water")
+
+
 def measure_water_area_sar(
     image: ee.Image,
     aoi_geometry: ee.Geometry,
@@ -315,20 +342,11 @@ def measure_water_area_sar(
         threshold = _otsu_threshold(histogram)
         method = "otsu"
 
-    water = backscatter.lt(threshold).rename("water")
-    area_m2 = (
-        water.multiply(ee.Image.pixelArea())
-        .reduceRegion(
-            reducer=ee.Reducer.sum(),
-            geometry=aoi_geometry,
-            scale=scale,
-            bestEffort=True,
-        )
-        .get("water")
-    )
+    water = sar_water_mask(image, band, threshold)
+    area_m2 = water_area_m2(water, aoi_geometry, scale)
 
     return {
-        "area_m2": ee.Number(area_m2).getInfo(),
+        "area_m2": area_m2.getInfo(),
         "threshold_db": threshold.getInfo(),
         "method": method,
         "band": band,
@@ -422,6 +440,23 @@ def scl_bad_fraction(image: ee.Image, aoi_geometry: ee.Geometry, scale: int = 10
     return stats.get("bad")
 
 
+def optical_water_mask(
+    image: ee.Image,
+    cloud_prob: ee.Image,
+    ndwi_threshold: float = 0.0,
+    cloud_prob_threshold: float = DEFAULT_CLOUD_PROB_THRESHOLD,
+) -> ee.Image:
+    """Binary "water" mask from a Sentinel-2 image (or multi-tile mosaic): NDWI above the
+    threshold, restricted to pixels s2cloudless considers clear. `cloud_prob` comes from
+    _cloud_probability_image for the same scene_ids.
+
+    Shared by measure_water_area_optical and Stage 3's water-mask export -- see sar_water_mask.
+    """
+    clear = cloud_prob.lte(cloud_prob_threshold)
+    ndwi = image.normalizedDifference(["B3", "B8"]).rename("ndwi")
+    return ndwi.gt(ndwi_threshold).And(clear).rename("water")
+
+
 def measure_water_area_optical(
     image: ee.Image,
     scene_ids: list[str],
@@ -460,23 +495,11 @@ def measure_water_area_optical(
         return None
 
     cloud_prob = _cloud_probability_image(scene_ids)
-    clear = cloud_prob.lte(cloud_prob_threshold)
-    ndwi = image.normalizedDifference(["B3", "B8"]).rename("ndwi")
-    water = ndwi.gt(ndwi_threshold).And(clear).rename("water")
-
-    area_m2 = (
-        water.multiply(ee.Image.pixelArea())
-        .reduceRegion(
-            reducer=ee.Reducer.sum(),
-            geometry=aoi_geometry,
-            scale=scale,
-            bestEffort=True,
-        )
-        .get("water")
-    )
+    water = optical_water_mask(image, cloud_prob, ndwi_threshold, cloud_prob_threshold)
+    area_m2 = water_area_m2(water, aoi_geometry, scale)
 
     return {
-        "area_m2": ee.Number(area_m2).getInfo(),
+        "area_m2": area_m2.getInfo(),
         "cloud_fraction": cloud_fraction,
         "aod": aod,
         "scl_bad_fraction": bad_fraction,

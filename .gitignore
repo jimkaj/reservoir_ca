@@ -8,3 +8,7 @@ wheels/
 
 # Virtual environments
 .venv
+
+# Stage 3: built site and current water masks (published only on the gh-pages branch)
+site/
+reservoirs/site_assets/masks/

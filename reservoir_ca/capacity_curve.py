@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import datetime as _dt
 import json
-import urllib.error
+import time
 import urllib.parse
 import urllib.request
 from pathlib import Path
@@ -32,8 +32,18 @@ from reservoir_ca.config import RESERVOIRS_DIR, Reservoir
 CDEC_STORAGE_URL = "https://cdec.water.ca.gov/dynamicapp/req/JSONDataServlet"
 CDEC_STORAGE_SENSOR = 15  # AF, daily
 CDEC_USER_AGENT = "reservoir-ca-project/0.1 (research use)"
+# Transient network failures (seen 2026-09-25: a raw ConnectionResetError mid-response, which is
+# an OSError but not a urllib URLError) are retried before giving up, so one blip doesn't abort an
+# unattended run or make a reservoir look like it has no CDEC data.
+CDEC_FETCH_ATTEMPTS = 3
+CDEC_RETRY_BACKOFF_S = 5
 
 CAPACITY_CURVES_DIR = RESERVOIRS_DIR / "capacity_curves"
+# One row per empirical curve: the date range of the (area, storage) pairs it was fit on. Stage 3
+# needs fit_through to tell a visitor which satellite-vs-CDEC comparisons are genuinely
+# out-of-sample (observed after the curve was fit) vs. partly agreeing by construction.
+FIT_METADATA_CSV = CAPACITY_CURVES_DIR / "fit_metadata.csv"
+FIT_METADATA_COLUMNS = ["cdec_station_id", "fit_from", "fit_through", "n_pairs", "fitted_on"]
 
 # Below this many (area, storage) pairs, a fitted curve is too sparse/narrow-range to trust --
 # see reservoir_ca_status memory, 2026-09-23: only reservoirs with a full historical backfill
@@ -73,10 +83,16 @@ def fetch_cdec_storage(cdec_station_id: str, since_date: str, until_date: str) -
     }
     url = f"{CDEC_STORAGE_URL}?{urllib.parse.urlencode(params)}"
     request = urllib.request.Request(url, headers={"User-Agent": CDEC_USER_AGENT})
-    try:
-        with urllib.request.urlopen(request, timeout=30) as response:
-            records = json.loads(response.read())
-    except (urllib.error.URLError, json.JSONDecodeError):
+    records = None
+    for attempt in range(CDEC_FETCH_ATTEMPTS):
+        try:
+            with urllib.request.urlopen(request, timeout=30) as response:
+                records = json.loads(response.read())
+            break
+        except (OSError, json.JSONDecodeError):  # URLError, ConnectionResetError, timeouts
+            if attempt + 1 < CDEC_FETCH_ATTEMPTS:
+                time.sleep(CDEC_RETRY_BACKOFF_S * (attempt + 1))
+    if records is None:
         return pd.DataFrame(columns=["date", "storage_af"])
 
     rows = []
@@ -170,7 +186,15 @@ def build_capacity_curve(
     pairs = build_area_volume_pairs(reservoir, processed, cdec_storage)
     if len(pairs) < MIN_PAIRS_TO_FIT:
         return None
-    return fit_capacity_curve(pairs)
+    curve = fit_capacity_curve(pairs)
+    curve.attrs["fit_metadata"] = {
+        "cdec_station_id": reservoir.cdec_station_id,
+        "fit_from": pairs["date"].min(),
+        "fit_through": pairs["date"].max(),
+        "n_pairs": len(pairs),
+        "fitted_on": _dt.date.today().isoformat(),
+    }
+    return curve
 
 
 def capacity_curve_path(cdec_station_id: str) -> Path:
@@ -181,3 +205,20 @@ def save_capacity_curve(cdec_station_id: str, curve: pd.DataFrame) -> None:
     path = capacity_curve_path(cdec_station_id)
     path.parent.mkdir(parents=True, exist_ok=True)
     curve.to_csv(path, index=False)
+
+
+def load_fit_metadata() -> pd.DataFrame:
+    if not FIT_METADATA_CSV.exists():
+        return pd.DataFrame(columns=FIT_METADATA_COLUMNS)
+    return pd.read_csv(FIT_METADATA_CSV)
+
+
+def update_fit_metadata(cdec_station_id: str, metadata: dict | None) -> None:
+    """Replace this station's row in FIT_METADATA_CSV, or drop it when `metadata` is None (its
+    curve was removed as stale -- see build_capacity_curves.py)."""
+    df = load_fit_metadata()
+    df = df[df["cdec_station_id"] != cdec_station_id]
+    if metadata is not None:
+        df = pd.concat([df, pd.DataFrame([metadata], columns=FIT_METADATA_COLUMNS)])
+    FIT_METADATA_CSV.parent.mkdir(parents=True, exist_ok=True)
+    df.sort_values("cdec_station_id").to_csv(FIT_METADATA_CSV, index=False)

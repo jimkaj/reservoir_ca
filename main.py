@@ -175,17 +175,24 @@ def main() -> None:
         # whole run at the end -- mirrors calibrate_sar_thresholds.py.
         reservoirs = sorted(reservoirs, key=lambda r: r.capacity_af, reverse=True)
 
+    run_stage1(reservoirs, {r.cdec_station_id: args.since for r in reservoirs}, args.workers)
+
+
+def run_stage1(reservoirs: list[Reservoir], since_by_station: dict[str, str], workers: int) -> None:
+    """Find and measure new scenes for each reservoir from its own since-date, concurrently.
+    Shared by main() (one --since for every reservoir) and run_pipeline.py (a per-reservoir
+    since-date for only the reservoirs that are due)."""
     processed = config.load_processed_scene_ids()
     sar_thresholds = config.load_sar_thresholds()
     excluded_geometries = config.load_excluded_geometries()
     ledger_lock = threading.Lock()
 
-    with ThreadPoolExecutor(max_workers=args.workers) as pool:
+    with ThreadPoolExecutor(max_workers=workers) as pool:
         futures = {
             pool.submit(
                 _process_reservoir,
                 reservoir,
-                args.since,
+                since_by_station[reservoir.cdec_station_id],
                 processed,
                 sar_thresholds,
                 excluded_geometries,
@@ -198,7 +205,7 @@ def main() -> None:
             if error is not None:
                 print(f"{station_id}: FAILED ({error})")
             elif n_logged == 0:
-                print(f"{station_id}: no new scenes since {args.since}")
+                print(f"{station_id}: no new scenes since {since_by_station[station_id]}")
             else:
                 print(f"{station_id}: {n_logged} scene(s) logged")
 

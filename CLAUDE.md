@@ -9,7 +9,7 @@ cloud-immune) and Sentinel-2 optical (secondary, validates SAR) are queried and 
 server-side through Google Earth Engine — no imagery is downloaded locally. Full design rationale
 is in `planning/ProjectPlan.docx`; `planning/smoke_test_findings.md` has the original 48-reservoir
 smoke-test writeup. This is a sequential pipeline, not an agent system: Stage 1 (Query & Measure)
-→ Stage 2 (Volume Conversion) → Stage 3 (Reporting, not yet built).
+→ Stage 2 (Volume Conversion) → Stage 3 (Reporting: a static website).
 
 ## Commands
 
@@ -36,6 +36,15 @@ python diagnose_aois.py --project reservoir-ca --reservoir <ID>
 python build_capacity_curves.py --since 2024-09-23          # empirical, needs >=10 area/storage pairs
 python build_inferred_capacity_curves.py --project reservoir-ca --dry-run   # for reservoirs without one
 python run_stage2.py                                        # writes reservoirs/timeseries/<ID>.csv
+
+# Stage 3: refresh imagery (representative images once, water masks when a newer scene lands),
+# build the static site into ./site, publish it to the gh-pages branch
+python build_site.py --project reservoir-ca                 # --skip-imagery: no Earth Engine
+python publish_site.py                                      # force-pushes a history-less gh-pages
+
+# Scheduled end-to-end run: Stage 1 only for reservoirs whose latest measured scene is >=2 days
+# old, then Stage 2, then Stage 3
+python run_pipeline.py --project reservoir-ca --dry-run     # list what's due; add --publish to publish
 ```
 
 There is no automated test suite and no linter config. Every non-trivial script/function in this
@@ -70,8 +79,21 @@ only appeared at full scale or on specific reservoirs.
   regression enforces monotonicity. For reservoirs with too little history to fit one,
   `reservoir_ca/inferred_capacity_curve.py` predicts a curve from reservoir metadata alone (see
   below); these live in a *separate* directory, `reservoirs/capacity_curves_inferred/`, and are
-  flagged in `ReservoirList.csv`. Output time series: `reservoirs/timeseries/<ID>.csv`.
-- **Stage 3** (reporting): not built yet.
+  flagged in `ReservoirList.csv`. Output time series: `reservoirs/timeseries/<ID>.csv`, with a
+  neighbour-consistency QC flag per observation (`neighbour_consistency`: area >20% from the
+  median of other observations within ±7 days → `rejected`; flagged, never deleted). Stage 3 uses
+  only non-rejected observations and prefers Sentinel-2 over Sentinel-1 on a shared date
+  (`stage3_aggregate.usable`).
+- **Stage 3** (`reservoir_ca/stage3_aggregate.py`, `stage3_imagery.py`, `stage3_site.py`, page
+  templates in `reservoir_ca/site_template/`): a static site with page data embedded as JSON, so it
+  needs no server. The home page's fleet total carries each reservoir's latest value forward
+  daily (`fleet_daily_totals`). Water masks are rebuilt from the latest ledger row via the *same*
+  Stage 1 classifiers (`sar_water_mask`/`optical_water_mask`), and each mask's area must match the
+  ledger or it isn't published. Representative images are committed
+  (`reservoirs/site_assets/representative/`); masks and `./site` are gitignored and exist only on
+  the `gh-pages` branch, which `publish_site.py` replaces with a single parentless commit each time.
+  `reservoirs/capacity_curves/fit_metadata.csv` records each curve's fit window, so the site can
+  say which CDEC comparisons are out-of-sample.
 
 **Config and the reservoir list** (`reservoir_ca/config.py`): `ReservoirList.csv` is the master
 table — one row per reservoir, `excluded`/`exclusion_reason` columns gate whether
@@ -137,4 +159,4 @@ blanket "data quality" note). All 38 monitored reservoirs have a full 2-year Sta
 an empirical Stage 2 capacity curve; the 10 excluded reservoirs mostly have an *inferred* curve
 instead (metadata-only prediction, ~12% median error vs. ~2-5% for empirical — see
 `reservoir_ca/inferred_capacity_curve.py`'s docstring for the validation methodology and the
-operator-regime finding that made it work). Stage 3 (reporting) has not been started.
+operator-regime finding that made it work). Stage 3 (the reporting site) is built; see Architecture.
