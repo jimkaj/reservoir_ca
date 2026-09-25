@@ -35,6 +35,14 @@
     </div>
   </section>
 
+  <section class="card" aria-labelledby="map-heading">
+    <div class="card-head">
+      <h2 id="map-heading">Reservoirs</h2>
+      <span class="muted">Blue fill shows how full each reservoir is; the number is its current volume. Select one for details.</span>
+    </div>
+    <div id="map" class="map" role="region" aria-label="Map of tracked reservoirs"></div>
+  </section>
+
   <section class="card" aria-labelledby="totals-heading">
     <div class="card-head">
       <h2 id="totals-heading">Total volume over time</h2>
@@ -44,14 +52,6 @@
     <p class="note">Each day's total adds up every reservoir's most recent estimate, whether it was observed that day or a few days earlier, so a reservoir's contribution changes only when a new image of it is processed. The series starts $totals_start, the first date every tracked reservoir had been observed.</p>
     <h2 style="margin-top:20px">Total water surface area</h2>
     <div id="total-area-chart"></div>
-  </section>
-
-  <section class="card" aria-labelledby="map-heading">
-    <div class="card-head">
-      <h2 id="map-heading">Reservoirs</h2>
-      <span class="muted">Blue fill shows how full each reservoir is; the number is its current volume. Select one for details.</span>
-    </div>
-    <div id="map" class="map" role="region" aria-label="Map of tracked reservoirs"></div>
   </section>
 
   <section class="card" aria-labelledby="table-heading">

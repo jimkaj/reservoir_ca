@@ -218,6 +218,12 @@ def build_site(
                 for row in ts.itertuples(index=False)
             ],
             "cdec": [[row.date, _round(row.storage_af)] for row in cdec.itertuples(index=False)],
+            # The value the site reports for each observed date (QC-accepted, S2 preferred, S1
+            # smoothed -- stage3_aggregate.daily_values), drawn as a line against CDEC's.
+            "estimate": [
+                [row.date, _round(row.volume_af)]
+                for row in agg.daily_values(ts).itertuples(index=False)
+            ],
             "representative": {"url": f"../images/representative/{sid}.jpg", "bounds": rep["bounds"]},
             "mask": mask_payload,
             "aoi": display_geometry(reservoir.aoi_geometry()),

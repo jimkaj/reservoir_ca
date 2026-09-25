@@ -47,6 +47,9 @@
     volumeSeries.unshift({ key: "cdec", label: "CDEC reported storage (reference)", kind: "line",
                            cssVar: "--reference", data: data.cdec });
   }
+  // Drawn last so it sits on top of the dots it summarizes.
+  volumeSeries.push({ key: "estimate", label: "Computed volume", kind: "line",
+                      cssVar: "--series-estimate", data: data.estimate });
   const volumeChart = new TimeChart(document.getElementById("volume-chart"), {
     series: volumeSeries,
     refs: [{ value: data.capacity_af, label: `Capacity ${formatAF(data.capacity_af)}` }],
