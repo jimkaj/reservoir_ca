@@ -152,3 +152,33 @@ def fleet_daily_totals(
             "n_observed": observed.sum(axis=1).to_numpy(),
         }
     )
+
+
+# 5-year average line (James, 2026-09-25): for each date, the mean of CDEC's reported storage on
+# the same calendar date in each of the previous FIVE_YEAR_SPAN years. A gap in CDEC's daily
+# record is bridged from the last earlier reading for up to AVERAGE_FILL_DAYS days; a date needs
+# at least AVERAGE_MIN_YEARS of the years to have a value.
+FIVE_YEAR_SPAN = 5
+AVERAGE_FILL_DAYS = 3
+AVERAGE_MIN_YEARS = 3
+
+
+def five_year_average(cdec: pd.DataFrame, dates: pd.DatetimeIndex) -> pd.Series:
+    """Same-calendar-date mean of `cdec` (columns [date, storage_af]) over the FIVE_YEAR_SPAN
+    years before each of `dates`; NaN where fewer than AVERAGE_MIN_YEARS years have data. Feb 29
+    maps to Feb 28 in non-leap years (pandas' DateOffset does this)."""
+    if cdec.empty:
+        return pd.Series(float("nan"), index=dates)
+    daily = cdec.assign(date=pd.to_datetime(cdec["date"])).set_index("date")["storage_af"]
+    daily = daily.reindex(pd.date_range(daily.index.min(), daily.index.max(), freq="D"))
+    daily = daily.ffill(limit=AVERAGE_FILL_DAYS)
+    years = pd.DataFrame(
+        {
+            k: daily.reindex(dates - pd.DateOffset(years=k)).to_numpy()
+            for k in range(1, FIVE_YEAR_SPAN + 1)
+        },
+        index=dates,
+    )
+    average = years.mean(axis=1)
+    return average.where(years.notna().sum(axis=1) >= AVERAGE_MIN_YEARS)
+

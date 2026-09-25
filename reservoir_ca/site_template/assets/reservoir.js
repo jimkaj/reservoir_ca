@@ -47,6 +47,10 @@
     volumeSeries.unshift({ key: "cdec", label: "CDEC reported storage (reference)", kind: "line",
                            cssVar: "--reference", data: data.cdec });
   }
+  if (data.five_year_average.length) {
+    volumeSeries.unshift({ key: "average", label: "5-year average (CDEC)", kind: "line", dotted: true,
+                           cssVar: "--series-average", data: data.five_year_average });
+  }
   // Drawn last so it sits on top of the dots it summarizes.
   volumeSeries.push({ key: "estimate", label: "Computed volume", kind: "line",
                       cssVar: "--series-estimate", data: data.estimate });
@@ -54,7 +58,7 @@
     series: volumeSeries,
     // Dashed (as on the home page) so it can't be mistaken for the solid grey CDEC line.
     refs: [{ value: data.capacity_af, label: `Capacity ${formatAF(data.capacity_af)}`, dashed: true }],
-    legendOrder: ["s1", "s2", "estimate", "cdec"],
+    legendOrder: ["s1", "s2", "estimate", "cdec", "average"],
     toggleable: true,
     format: formatAF, height: 320,
     ariaLabel: `Estimated volume of ${data.name} over time from Sentinel-1 and Sentinel-2, with CDEC reported storage and capacity`,

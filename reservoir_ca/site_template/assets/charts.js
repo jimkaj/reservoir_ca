@@ -57,7 +57,7 @@
     });
   }
 
-  // options: {series: [{key, label, kind: "line"|"dots", cssVar, data: [[isoDate, value, note?]]}],
+  // options: {series: [{key, label, kind: "line"|"dots", cssVar, dotted?, data: [[isoDate, value, note?]]}],
   //           refs: [{value, label, dashed?}], format: v => string, height, ariaLabel,
   //           legendOrder?: [series key, ...], toggleable?: bool}  -- series draw in array
   //           order (first = bottom); legendOrder only reorders the legend. toggleable turns each
@@ -109,7 +109,7 @@
     const order = this.opts.legendOrder || [];
     const rank = (s) => (order.includes(s.key) ? order.indexOf(s.key) : order.length);
     for (const s of [...this.series].sort((a, b) => rank(a) - rank(b))) {
-      item(s.key, `key-${s.kind}`, s.label, `var(${s.cssVar})`);
+      item(s.key, `key-${s.kind}${s.dotted ? " key-dotted" : ""}`, s.label, `var(${s.cssVar})`);
     }
     (this.opts.refs || []).forEach((r, i) => item(`ref:${i}`, r.dashed ? "key-ref key-ref-dashed" : "key-ref", r.label));
     if (this.series.some((s) => s.points.some((p) => p.rejected))) {
@@ -224,7 +224,7 @@
 
     this.series.forEach((s, i) => {
       const pts = visible[i];
-      const g = el("g", { class: `series series-${s.kind}` }, svg);
+      const g = el("g", { class: `series series-${s.kind}${s.dotted ? " series-dotted" : ""}` }, svg);
       g.style.setProperty("--series-color", `var(${s.cssVar})`);
       if (s.kind === "line") {
         if (pts.length) el("path", { d: pts.map((p, j) => `${j ? "L" : "M"}${x(p.t).toFixed(1)},${y(p.v).toFixed(1)}`).join("") }, g);

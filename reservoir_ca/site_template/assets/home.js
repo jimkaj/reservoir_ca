@@ -6,8 +6,13 @@
 
   // --- Charts --------------------------------------------------------------------------
   const volumeChart = new TimeChart(document.getElementById("total-volume-chart"), {
-    series: [{ key: "total", label: "Total volume", kind: "line", cssVar: "--series-total",
-               data: data.totals.map((r) => [r[0], r[1]]) }],
+    series: [
+      { key: "average", label: "5-year average (CDEC)", kind: "line", dotted: true,
+        cssVar: "--series-average", data: data.five_year_average },
+      { key: "total", label: "Total volume", kind: "line", cssVar: "--series-total",
+        data: data.totals.map((r) => [r[0], r[1]]) },
+    ],
+    legendOrder: ["total", "average"],
     refs: [{ value: data.total_capacity_af, label: `Combined capacity ${formatAF(data.total_capacity_af)}`, dashed: true }],
     format: formatAF, height: 300,
     ariaLabel: "Total volume of all tracked reservoirs over time, with combined capacity line",

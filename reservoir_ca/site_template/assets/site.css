@@ -13,6 +13,7 @@
   --series-s2: #eb6834;
   --series-total: #2a78d6;
   --series-estimate: #1baf7a;
+  --series-average: #86b6ef;
   --reference: #898781;
   --fill-water: #184f95;
   --fill-track: #d9d8d2;
@@ -35,6 +36,7 @@
     --series-s2: #d95926;
     --series-total: #3987e5;
     --series-estimate: #199e70;
+    --series-average: #256abf;
     --reference: #898781;
     --fill-water: #256abf;
     --fill-track: #c3c2b7;
@@ -56,6 +58,7 @@
   --series-s2: #d95926;
   --series-total: #3987e5;
   --series-estimate: #199e70;
+  --series-average: #256abf;
   --reference: #898781;
   --fill-water: #256abf;
   --fill-track: #c3c2b7;
@@ -133,6 +136,7 @@ p.note strong { color: var(--text-primary); font-weight: 600; }
 .chart .refline-dashed { stroke-dasharray: 6 4; }
 .chart .reflabel { fill: var(--text-secondary); font-size: 12px; paint-order: stroke; stroke: var(--surface-1); stroke-width: 3px; }
 .chart .series-line path { fill: none; stroke: var(--series-color); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.chart .series-dotted path { stroke-dasharray: 0.1 5; stroke-width: 2.5; }
 .chart .series-dots circle { fill: var(--series-color); stroke: var(--surface-1); stroke-width: 2; }
 /* Rejected by Stage 2's consistency check: hollow, so it stays visible but reads as set aside. */
 .chart .series-dots circle.rejected { fill: var(--surface-1); stroke: var(--series-color); stroke-width: 1.5; }
@@ -142,6 +146,7 @@ p.note strong { color: var(--text-primary); font-weight: 600; }
 .chart-legend:has(.legend-toggle) { gap: 6px; }
 .key { display: inline-block; flex: none; }
 .key-line { width: 14px; height: 2px; border-radius: 1px; background: var(--key-color); }
+.key-line.key-dotted { height: 0; background: none; border-top: 2.5px dotted var(--key-color); }
 .key-dots { width: 8px; height: 8px; border-radius: 50%; background: var(--key-color); }
 .key-ref { width: 14px; height: 0; border-top: 1px solid var(--text-secondary); }
 .key-ref-dashed { border-top-style: dashed; }

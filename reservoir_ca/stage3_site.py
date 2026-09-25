@@ -177,12 +177,21 @@ def build_site(
 
     home_reservoirs = []
     missing_imagery = []
+    averages = {}
     for sid, (reservoir, ts) in timeseries.items():
         status = agg.reservoir_status(reservoir, ts)
         name = display_name(reservoir.name)
         meta = reservoir_csv.loc[sid]
         first_date = ts["date"].min()
-        cdec = cc.fetch_cdec_storage(sid, first_date, today)
+        # Fetched from FIVE_YEAR_SPAN years (plus a little slack) before the first observation so
+        # the 5-year average exists from the chart's first date; the CDEC line itself is trimmed.
+        history_start = (
+            pd.Timestamp(first_date) - pd.DateOffset(years=agg.FIVE_YEAR_SPAN, days=10)
+        ).strftime("%Y-%m-%d")
+        cdec_history = cc.fetch_cdec_storage(sid, history_start, today)
+        cdec = cdec_history[cdec_history["date"] >= first_date].reset_index(drop=True)
+        average = agg.five_year_average(cdec_history, pd.date_range(first_date, today, freq="D"))
+        averages[sid] = average
         fit = fit_metadata.loc[sid].to_dict() if sid in fit_metadata.index else None
         comparison = _cdec_comparison(agg.usable(ts), cdec, fit["fit_through"] if fit else None)
 
@@ -218,6 +227,10 @@ def build_site(
                 for row in ts.itertuples(index=False)
             ],
             "cdec": [[row.date, _round(row.storage_af)] for row in cdec.itertuples(index=False)],
+            "five_year_average": [
+                [date.strftime("%Y-%m-%d"), _round(value)]
+                for date, value in average.dropna().items()
+            ],
             # The value the site reports for each observed date (QC-accepted, S2 preferred, S1
             # smoothed -- stage3_aggregate.daily_values), drawn as a line against CDEC's.
             "estimate": [
@@ -313,6 +326,11 @@ def build_site(
         {sid: ts for sid, (_, ts) in timeseries.items() if sid in included}, until_date=today
     )
     total_capacity = sum(r["capacity_af"] for r in home_reservoirs)
+    # Fleet 5-year average: the sum of every included reservoir's own, on dates where all have one.
+    fleet_average = pd.DataFrame({sid: averages[sid] for sid in included}).sum(
+        axis=1, min_count=len(included)
+    )
+    fleet_average = fleet_average[fleet_average.index >= pd.Timestamp(totals["date"].iloc[0])].dropna()
     total_volume = float(totals["volume_af"].iloc[-1])
     latest_observation = max(r["latest_date"] for r in home_reservoirs)
     home_data = {
@@ -321,6 +339,9 @@ def build_site(
             for row in totals.itertuples(index=False)
         ],
         "total_capacity_af": total_capacity,
+        "five_year_average": [
+            [date.strftime("%Y-%m-%d"), _round(value)] for date, value in fleet_average.items()
+        ],
         "reservoirs": home_reservoirs,
     }
     page = _page(
