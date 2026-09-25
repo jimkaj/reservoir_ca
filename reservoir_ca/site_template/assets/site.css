@@ -137,6 +137,16 @@ p.note { color: var(--text-secondary); font-size: 13.5px; margin: 8px 0 0; max-w
 .chart .crosshair { stroke: var(--text-muted); stroke-width: 1; shape-rendering: crispEdges; pointer-events: none; }
 .chart-legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; color: var(--text-secondary); margin: 0 0 8px; }
 .legend-item { display: inline-flex; align-items: center; gap: 6px; }
+/* Toggleable legend (reservoir charts): each entry is an on/off button. */
+.chart-legend:has(.legend-toggle) { gap: 6px; }
+.legend-toggle {
+  font: inherit; font-size: 13px; color: var(--text-secondary); cursor: pointer;
+  background: transparent; border: 1px solid var(--border); border-radius: 6px; padding: 3px 8px;
+}
+.legend-toggle:hover { background: var(--border); }
+.legend-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.legend-toggle[aria-pressed="false"] { color: var(--text-muted); text-decoration: line-through; }
+.legend-toggle[aria-pressed="false"] .key { opacity: 0.3; }
 .key { display: inline-block; flex: none; }
 .key-line { width: 14px; height: 2px; border-radius: 1px; background: var(--key-color); }
 .key-dots { width: 8px; height: 8px; border-radius: 50%; background: var(--key-color); }

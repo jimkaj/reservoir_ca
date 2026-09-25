@@ -59,8 +59,10 @@
 
   // options: {series: [{key, label, kind: "line"|"dots", cssVar, data: [[isoDate, value, note?]]}],
   //           refs: [{value, label, dashed?}], format: v => string, height, ariaLabel,
-  //           legendOrder?: [series key, ...]}  -- series draw in array order (first = bottom);
-  //           legendOrder only reorders the legend.
+  //           legendOrder?: [series key, ...], toggleable?: bool}  -- series draw in array
+  //           order (first = bottom); legendOrder only reorders the legend. toggleable turns each
+  //           legend entry into an on/off button (all on initially); hidden elements drop out of
+  //           the plot, the tooltip and the y-axis fit.
   function TimeChart(container, options) {
     this.container = container;
     this.opts = options;
@@ -69,6 +71,7 @@
       points: s.data.map((d) => ({ t: parseDate(d[0]), v: d[1], note: d[2] || null, rejected: !!d[3], iso: d[0] })),
     }));
     this.range = null;
+    this.hidden = new Set();  // series keys, "ref:<index>", "rejected"
     this.root = h("div", "chart", container);
     if (this.series.length >= 2 || (options.refs || []).length) this.buildLegend();
     this.plot = h("div", "chart-plot", this.root);
@@ -82,22 +85,35 @@
 
   TimeChart.prototype.buildLegend = function () {
     const legend = h("div", "chart-legend", this.root);
+    const toggleable = !!this.opts.toggleable;
+    if (toggleable) {
+      legend.setAttribute("role", "group");
+      legend.setAttribute("aria-label", "Show or hide chart elements");
+    }
+    const item = (id, keyClass, label, keyColor) => {
+      const node = h(toggleable ? "button" : "span", toggleable ? "legend-item legend-toggle" : "legend-item", legend);
+      const key = h("span", `key ${keyClass}`, node);
+      if (keyColor) key.style.setProperty("--key-color", keyColor);
+      h("span", null, node, label);
+      if (toggleable) {
+        node.type = "button";
+        node.setAttribute("aria-pressed", "true");
+        node.addEventListener("click", () => {
+          const on = this.hidden.has(id);
+          if (on) this.hidden.delete(id); else this.hidden.add(id);
+          node.setAttribute("aria-pressed", String(on));
+          this.render();
+        });
+      }
+    };
     const order = this.opts.legendOrder || [];
     const rank = (s) => (order.includes(s.key) ? order.indexOf(s.key) : order.length);
     for (const s of [...this.series].sort((a, b) => rank(a) - rank(b))) {
-      const item = h("span", "legend-item", legend);
-      h("span", `key key-${s.kind}`, item).style.setProperty("--key-color", `var(${s.cssVar})`);
-      h("span", null, item, s.label);
+      item(s.key, `key-${s.kind}`, s.label, `var(${s.cssVar})`);
     }
-    for (const r of this.opts.refs || []) {
-      const item = h("span", "legend-item", legend);
-      h("span", r.dashed ? "key key-ref key-ref-dashed" : "key key-ref", item);
-      h("span", null, item, r.label);
-    }
+    (this.opts.refs || []).forEach((r, i) => item(`ref:${i}`, r.dashed ? "key-ref key-ref-dashed" : "key-ref", r.label));
     if (this.series.some((s) => s.points.some((p) => p.rejected))) {
-      const item = h("span", "legend-item", legend);
-      h("span", "key key-rejected", item);
-      h("span", null, item, "Rejected (far from nearby observations)");
+      item("rejected", "key-rejected", "Rejected (far from nearby observations)");
     }
   };
 
@@ -150,7 +166,9 @@
     const height = this.opts.height || 280;
     const m = { top: 12, right: 16, bottom: 28, left: 60 };
     const [t0, t1] = this.domain();
-    const visible = this.series.map((s) => s.points.filter((p) => p.t >= t0 && p.t <= t1));
+    const showRejected = !this.hidden.has("rejected");
+    const visible = this.series.map((s) => (this.hidden.has(s.key) ? [] : s.points.filter(
+      (p) => p.t >= t0 && p.t <= t1 && (showRejected || !p.rejected))));
     // Y-axis fitted tightly to the visible data (no forced zero). Rejected points don't widen it
     // -- one collapsed scene would otherwise stretch the axis -- and are pinned to the edge when
     // off-scale. A reference line (capacity) widens it only when it's within REF_REACH of the
@@ -163,7 +181,10 @@
     }));
     if (!isFinite(vmin)) { vmin = 0; vmax = 1; }
     const dataMax = vmax;
-    const refs = (this.opts.refs || []).map((r) => ({ ...r, inRange: r.value <= dataMax * (1 + REF_REACH) }));
+    const refs = (this.opts.refs || [])
+      .filter((r, i) => !this.hidden.has(`ref:${i}`))
+      .map((r) => ({ ...r, inRange: r.value <= dataMax * (1 + REF_REACH) }));
+    this.activeRefs = refs;
     for (const r of refs) if (r.inRange) vmax = Math.max(vmax, r.value);
     const pad = (vmax - vmin) * 0.06 || Math.abs(vmax) * 0.05 || 1;
     vmin -= pad;
@@ -264,7 +285,7 @@
       h("span", "tip-label", row, label);
       for (const p of same) if (p.note) h("div", "tip-note", tip, p.note);
     });
-    for (const r of this.opts.refs || []) {
+    for (const r of this.activeRefs || []) {
       const row = h("div", "tip-row", tip);
       h("span", "key key-ref", row);
       h("strong", null, row, this.opts.format(r.value));

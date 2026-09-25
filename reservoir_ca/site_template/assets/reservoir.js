@@ -55,6 +55,7 @@
     // Dashed (as on the home page) so it can't be mistaken for the solid grey CDEC line.
     refs: [{ value: data.capacity_af, label: `Capacity ${formatAF(data.capacity_af)}`, dashed: true }],
     legendOrder: ["s1", "s2", "estimate", "cdec"],
+    toggleable: true,
     format: formatAF, height: 320,
     ariaLabel: `Estimated volume of ${data.name} over time from Sentinel-1 and Sentinel-2, with CDEC reported storage and capacity`,
   });
@@ -63,7 +64,7 @@
       { key: "s1", label: "Sentinel-1 (radar)", kind: "dots", cssVar: "--series-s1", data: bySensor("S1", "area_m2") },
       { key: "s2", label: "Sentinel-2 (optical)", kind: "dots", cssVar: "--series-s2", data: bySensor("S2", "area_m2") },
     ],
-    format: formatKm2, height: 190,
+    format: formatKm2, height: 190, toggleable: true,
     ariaLabel: `Measured water surface area of ${data.name} over time`,
   });
   RangeControl(document.getElementById("range"), [volumeChart, areaChart],
