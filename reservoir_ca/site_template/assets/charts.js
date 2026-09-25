@@ -58,7 +58,9 @@
   }
 
   // options: {series: [{key, label, kind: "line"|"dots", cssVar, data: [[isoDate, value, note?]]}],
-  //           refs: [{value, label}], format: v => string, height, zeroBased, ariaLabel}
+  //           refs: [{value, label, dashed?}], format: v => string, height, zeroBased, ariaLabel,
+  //           legendOrder?: [series key, ...]}  -- series draw in array order (first = bottom);
+  //           legendOrder only reorders the legend.
   function TimeChart(container, options) {
     this.container = container;
     this.opts = options;
@@ -80,14 +82,16 @@
 
   TimeChart.prototype.buildLegend = function () {
     const legend = h("div", "chart-legend", this.root);
-    for (const s of this.series) {
+    const order = this.opts.legendOrder || [];
+    const rank = (s) => (order.includes(s.key) ? order.indexOf(s.key) : order.length);
+    for (const s of [...this.series].sort((a, b) => rank(a) - rank(b))) {
       const item = h("span", "legend-item", legend);
       h("span", `key key-${s.kind}`, item).style.setProperty("--key-color", `var(${s.cssVar})`);
       h("span", null, item, s.label);
     }
     for (const r of this.opts.refs || []) {
       const item = h("span", "legend-item", legend);
-      h("span", "key key-ref", item);
+      h("span", r.dashed ? "key key-ref key-ref-dashed" : "key key-ref", item);
       h("span", null, item, r.label);
     }
     if (this.series.some((s) => s.points.some((p) => p.rejected))) {
@@ -177,7 +181,7 @@
     }
 
     for (const r of this.opts.refs || []) {
-      el("line", { x1: m.left, x2: width - m.right, y1: y(r.value), y2: y(r.value), class: "refline" }, svg);
+      el("line", { x1: m.left, x2: width - m.right, y1: y(r.value), y2: y(r.value), class: r.dashed ? "refline refline-dashed" : "refline" }, svg);
       el("text", { x: width - m.right, y: y(r.value) - 6, class: "reflabel", "text-anchor": "end" }, svg).textContent = r.label;
     }
 

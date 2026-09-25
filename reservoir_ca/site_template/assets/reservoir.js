@@ -52,7 +52,9 @@
                       cssVar: "--series-estimate", data: data.estimate });
   const volumeChart = new TimeChart(document.getElementById("volume-chart"), {
     series: volumeSeries,
-    refs: [{ value: data.capacity_af, label: `Capacity ${formatAF(data.capacity_af)}` }],
+    // Dashed so it can't be mistaken for the (solid, also grey) CDEC line.
+    refs: [{ value: data.capacity_af, label: `Capacity ${formatAF(data.capacity_af)}`, dashed: true }],
+    legendOrder: ["s1", "s2", "estimate", "cdec"],
     format: formatAF, zeroBased: true, height: 320,
     ariaLabel: `Estimated volume of ${data.name} over time from Sentinel-1 and Sentinel-2, with CDEC reported storage and capacity`,
   });
