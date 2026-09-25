@@ -28,6 +28,7 @@ import numpy as np
 import pandas as pd
 
 from reservoir_ca.config import RESERVOIRS_DIR, Reservoir
+from reservoir_ca.stage2_volume_conversion import neighbour_consistency
 
 CDEC_STORAGE_URL = "https://cdec.water.ca.gov/dynamicapp/req/JSONDataServlet"
 CDEC_STORAGE_SENSOR = 15  # AF, daily
@@ -120,11 +121,19 @@ def build_area_volume_pairs(
     Sentinel-1 and Sentinel-2 both measure the same physical surface area, so the area->volume
     relationship doesn't depend on which one made a given measurement. Only ledger rows with a
     non-null area_m2 are used -- every "don't trust this row" case (skipped/hazy/cirrus/None)
-    already nulls that field, so no extra filtering is needed here.
+    already nulls that field -- and of those, only ones the consistency check accepts.
     """
     measured = processed[
         (processed["cdec_station_id"] == reservoir.cdec_station_id) & processed["area_m2"].notna()
-    ][["scene_date", "area_m2"]].rename(columns={"scene_date": "date"})
+    ][["scene_date", "area_m2"]].rename(columns={"scene_date": "date"}).reset_index(drop=True)
+    # Drop observations Stage 2's neighbour-consistency check rejects (area far from nearby
+    # observations -- e.g. an S2 scene collapsed by smoke the screens missed). The check is on
+    # area alone, never CDEC, so this doesn't leak the fit target into the filter. Validated
+    # 2026-09-25 with a time split (fit before 2026-03-25, score after, all 38 reservoirs): never
+    # worse on any reservoir, better on 10 -- LBS 44.6% -> 10.7%, BUC 41.3% -> 14.8%,
+    # DON 9.2% -> 5.3%, ISB 18.6% -> 15.1% median error vs CDEC.
+    qc = neighbour_consistency(measured["date"], measured["area_m2"])
+    measured = measured[qc["qc_status"] != "rejected"]
     return measured.merge(cdec_storage, on="date", how="inner")
 
 
