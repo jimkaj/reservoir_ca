@@ -250,7 +250,10 @@ def build_site(
         else:
             fit_sentence = ""
 
-        sensors = " and ".join(sensor_names[s] for s in status.latest_sensors)
+        sensors = (
+            "Sentinel-2 optical" if status.latest_sensors == ("S2",)
+            else "Sentinel-1 radar (median of recent radar observations)"
+        )
         operator = meta.get("operator_agency")
         county = meta.get("county")
         subtitle_parts = [f"CDEC station {sid}"]

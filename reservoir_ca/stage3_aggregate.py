@@ -12,6 +12,14 @@ didn't reject (see stage2_volume_conversion.neighbour_consistency). On a date wi
 Sentinel-2 observation, that date's value is the S2 one -- optical is the more accurate sensor
 (median error vs CDEC 3.3% vs 4.9% for S1 over 2 years) -- and S1 fills in only on dates without
 one. Several same-sensor observations on one date (two S2 tiles, two S1 orbits) are averaged.
+
+S1 smoothing (James, 2026-09-25): on a date without an accepted S2 value, the date's value is the
+median of the reservoir's last S1_SMOOTHING_OBSERVATIONS S1 dates within S1_SMOOTHING_WINDOW_DAYS
+(trailing only -- never uses later images). S1's remaining error is mostly scene-to-scene
+scatter, not a stable seasonal offset (tested 2026-09-25), so a short trailing median targets it
+directly. Chosen against CDEC over 2 years x 38 reservoirs from k in {1,2,3,5}, window in
+{10,20}: 3 within 10 days cut the fleet total's day-to-day jitter 28% (376 -> 271 KAF), p95
+error 7.4% -> 7.1%, and improved S1-only-day error including in winter (no harmful lag).
 """
 
 from __future__ import annotations
@@ -23,6 +31,9 @@ import pandas as pd
 
 from reservoir_ca.config import Reservoir
 from reservoir_ca.stage2_volume_conversion import timeseries_path
+
+S1_SMOOTHING_OBSERVATIONS = 3
+S1_SMOOTHING_WINDOW_DAYS = 10
 
 
 @dataclass(frozen=True)
@@ -58,28 +69,48 @@ def load_timeseries(reservoir: Reservoir) -> pd.DataFrame | None:
 
 
 def daily_values(timeseries: pd.DataFrame) -> pd.DataFrame:
-    """One row per observed date: mean volume/area of that date's usable observations."""
-    return (
-        usable(timeseries).groupby("date", as_index=False)[["volume_af", "area_m2"]]
+    """One row per observed date: the S2 mean where S2 was usable, otherwise the trailing S1
+    median (see module docstring). Columns [date, volume_af, area_m2, sensor]."""
+    kept = usable(timeseries)
+    per_date = (
+        kept.groupby(["date", "sensor"], as_index=False)[["volume_af", "area_m2"]]
         .mean()
         .sort_values("date")
         .reset_index(drop=True)
     )
+    s1 = per_date[per_date["sensor"] == "S1"]
+    s1 = s1.set_index(pd.to_datetime(s1["date"]))
+    window = pd.Timedelta(days=S1_SMOOTHING_WINDOW_DAYS)
+    rows = []
+    for row in per_date.itertuples(index=False):
+        if row.sensor == "S2":
+            rows.append({"date": row.date, "volume_af": row.volume_af, "area_m2": row.area_m2, "sensor": "S2"})
+            continue
+        day = pd.Timestamp(row.date)
+        recent = s1[(s1.index <= day) & (s1.index > day - window)].iloc[-S1_SMOOTHING_OBSERVATIONS:]
+        rows.append(
+            {
+                "date": row.date,
+                "volume_af": float(recent["volume_af"].median()),
+                "area_m2": float(recent["area_m2"].median()),
+                "sensor": "S1",
+            }
+        )
+    return pd.DataFrame(rows, columns=["date", "volume_af", "area_m2", "sensor"])
 
 
 def reservoir_status(reservoir: Reservoir, timeseries: pd.DataFrame) -> ReservoirStatus:
-    """The reservoir's current value -- its latest usable date's volume/area."""
-    kept = usable(timeseries)
-    latest_date = kept["date"].max()
-    latest = kept[kept["date"] == latest_date]
+    """The reservoir's current value -- its latest date's value per daily_values (so an
+    S1-only latest date reports the trailing S1 median, the same number the totals use)."""
+    latest = daily_values(timeseries).iloc[-1]
     return ReservoirStatus(
         cdec_station_id=reservoir.cdec_station_id,
         name=reservoir.name,
         capacity_af=int(reservoir.capacity_af),
-        latest_date=latest_date,
-        latest_sensors=tuple(sorted(latest["sensor"].unique())),
-        volume_af=float(latest["volume_af"].mean()),
-        area_m2=float(latest["area_m2"].mean()),
+        latest_date=latest["date"],
+        latest_sensors=(latest["sensor"],),
+        volume_af=float(latest["volume_af"]),
+        area_m2=float(latest["area_m2"]),
     )
 
 
