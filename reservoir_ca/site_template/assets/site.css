@@ -137,16 +137,7 @@ p.note { color: var(--text-secondary); font-size: 13.5px; margin: 8px 0 0; max-w
 .chart .crosshair { stroke: var(--text-muted); stroke-width: 1; shape-rendering: crispEdges; pointer-events: none; }
 .chart-legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; color: var(--text-secondary); margin: 0 0 8px; }
 .legend-item { display: inline-flex; align-items: center; gap: 6px; }
-/* Toggleable legend (reservoir charts): each entry is an on/off button. */
 .chart-legend:has(.legend-toggle) { gap: 6px; }
-.legend-toggle {
-  font: inherit; font-size: 13px; color: var(--text-secondary); cursor: pointer;
-  background: transparent; border: 1px solid var(--border); border-radius: 6px; padding: 3px 8px;
-}
-.legend-toggle:hover { background: var(--border); }
-.legend-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
-.legend-toggle[aria-pressed="false"] { color: var(--text-muted); text-decoration: line-through; }
-.legend-toggle[aria-pressed="false"] .key { opacity: 0.3; }
 .key { display: inline-block; flex: none; }
 .key-line { width: 14px; height: 2px; border-radius: 1px; background: var(--key-color); }
 .key-dots { width: 8px; height: 8px; border-radius: 50%; background: var(--key-color); }
@@ -191,13 +182,25 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .map-tip strong { font-size: 14px; }
 
 .toggles { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 0 10px; }
-.toggles button {
-  font: inherit; font-size: 13px; display: inline-flex; align-items: center; gap: 8px;
-  background: transparent; color: var(--text-secondary);
-  border: 1px solid var(--border); border-radius: 6px; padding: 5px 10px; cursor: pointer;
-}
-.toggles button[aria-pressed="true"] { color: var(--text-primary); border-color: var(--text-secondary); font-weight: 600; }
 .toggles .swatch { width: 12px; height: 12px; border-radius: 3px; }
+
+/* On/off toggles -- the satellite-view overlays and the reservoir chart legends share one look:
+   on = bold text with a strong border (white in dark mode, ink in light); off = subdued, struck
+   through, with its colour key faded. */
+.toggles button, .legend-toggle {
+  font: inherit; font-size: 13px; display: inline-flex; align-items: center; gap: 6px;
+  background: transparent; cursor: pointer; border-radius: 6px; padding: 4px 9px;
+}
+.toggles button[aria-pressed="true"], .legend-toggle[aria-pressed="true"] {
+  color: var(--text-primary); font-weight: 600; border: 1.5px solid var(--text-primary);
+}
+.toggles button[aria-pressed="false"], .legend-toggle[aria-pressed="false"] {
+  color: var(--text-muted); font-weight: 400; border: 1.5px solid var(--border);
+  text-decoration: line-through;
+}
+.toggles button[aria-pressed="false"] .swatch, .legend-toggle[aria-pressed="false"] .key { opacity: 0.3; }
+.toggles button:hover, .legend-toggle:hover { background: var(--border); }
+.toggles button:focus-visible, .legend-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .swatch-aoi { border: 2px solid #ffd400; }
 .swatch-mask { background: #00e5ff; }
 
