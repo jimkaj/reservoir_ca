@@ -91,6 +91,8 @@ h2 { font-size: 18px; margin: 0 0 4px; font-weight: 600; }
 .subtitle { color: var(--text-secondary); margin: 0 0 20px; }
 .muted { color: var(--text-muted); }
 p.note { color: var(--text-secondary); font-size: 13.5px; margin: 8px 0 0; max-width: 72ch; }
+p.image-note { margin: 0 0 10px; }
+p.note strong { color: var(--text-primary); font-weight: 600; }
 
 .card {
   background: var(--surface-1);

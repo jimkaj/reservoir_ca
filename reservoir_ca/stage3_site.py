@@ -278,8 +278,9 @@ def build_site(
             latest_date=status.latest_date,
             latest_sensors=html.escape(sensors),
             rep_caption=html.escape(
-                f"Image: {rep['source']}, {rep['from']} to {rep['to']}."
+                f"Reference image: {rep['source']}, {rep['from']} to {rep['to']}."
             ),
+            rep_period=html.escape(f"{rep['from']} to {rep['to']}"),
             mask_caption=html.escape(mask_caption),
             cdec_note=html.escape(f"{cdec_sentence} {fit_sentence}".strip()),
             generated_at=generated_at,
