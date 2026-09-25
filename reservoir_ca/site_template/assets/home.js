@@ -8,7 +8,7 @@
   const volumeChart = new TimeChart(document.getElementById("total-volume-chart"), {
     series: [{ key: "total", label: "Total volume", kind: "line", cssVar: "--series-total",
                data: data.totals.map((r) => [r[0], r[1]]) }],
-    refs: [{ value: data.total_capacity_af, label: `Combined capacity ${formatAF(data.total_capacity_af)}` }],
+    refs: [{ value: data.total_capacity_af, label: `Combined capacity ${formatAF(data.total_capacity_af)}`, dashed: true }],
     format: formatAF, zeroBased: true, height: 300,
     ariaLabel: "Total volume of all tracked reservoirs over time, with combined capacity line",
   });

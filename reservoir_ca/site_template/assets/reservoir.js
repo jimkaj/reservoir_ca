@@ -52,7 +52,7 @@
                       cssVar: "--series-estimate", data: data.estimate });
   const volumeChart = new TimeChart(document.getElementById("volume-chart"), {
     series: volumeSeries,
-    // Dashed so it can't be mistaken for the (solid, also grey) CDEC line.
+    // Dashed (as on the home page) so it can't be mistaken for the solid grey CDEC line.
     refs: [{ value: data.capacity_af, label: `Capacity ${formatAF(data.capacity_af)}`, dashed: true }],
     legendOrder: ["s1", "s2", "estimate", "cdec"],
     format: formatAF, zeroBased: true, height: 320,
