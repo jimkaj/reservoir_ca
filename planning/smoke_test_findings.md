@@ -51,7 +51,7 @@ tuning SAR thresholds to match a broken optical signal for reservoirs like HTH.
 `reservoirs/sar_threshold_calibration.csv`). `compare_calibrated_thresholds.py` then
 re-measured the *exact same* same-day S1/S2 scene pairs already logged in
 `ProcessedImagery.csv` from the run above, using each reservoir's calibrated threshold in
-place of plain Otsu, and wrote `reservoirs/smoke_test_calibrated_comparison.csv` (169 pairs
+place of plain Otsu, and wrote `planning/investigations/smoke_test_calibrated_comparison.csv` (169 pairs
 across 42 reservoirs with same-day imagery; CLE/FOL/WHI/PRR/KES/LEW still have none, matching
 the original run).
 

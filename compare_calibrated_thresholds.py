@@ -4,7 +4,7 @@ resolved the SAR-hot/SAR-cold disagreements recorded in planning/smoke_test_find
 
 Re-measures the exact scenes already logged in reservoirs/ProcessedImagery.csv -- doesn't
 query Earth Engine for new scenes or touch the ledger. Writes
-reservoirs/smoke_test_calibrated_comparison.csv.
+planning/investigations/smoke_test_calibrated_comparison.csv.
 
 Requires Google Earth Engine access -- see reservoir_ca/gee_auth.py.
 """
@@ -22,7 +22,7 @@ from reservoir_ca import smoke_test_compare as compare
 from reservoir_ca.config import Reservoir
 
 DEFAULT_WORKERS = 6
-OUTPUT_CSV = config.RESERVOIRS_DIR / "smoke_test_calibrated_comparison.csv"
+OUTPUT_CSV = config.REPO_ROOT / "planning" / "investigations" / "smoke_test_calibrated_comparison.csv"
 
 
 def _compare_one(

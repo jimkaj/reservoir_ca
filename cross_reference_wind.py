@@ -65,7 +65,7 @@ def main() -> None:
     summary = wx.correlate_with_wind(series)
 
     out_csv = (
-        config.RESERVOIRS_DIR
+        config.REPO_ROOT / "planning" / "investigations"
         / f"wind_cross_reference_{args.reservoir}_{args.orbit_pass}_{args.relative_orbit}.csv"
     )
     series.to_csv(out_csv, index=False)
