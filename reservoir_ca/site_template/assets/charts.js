@@ -59,10 +59,11 @@
 
   // options: {series: [{key, label, kind: "line"|"dots", cssVar, dotted?, data: [[isoDate, value, note?]]}],
   //           refs: [{value, label, dashed?}], format: v => string, height, ariaLabel,
-  //           legendOrder?: [series key, ...], toggleable?: bool}  -- series draw in array
-  //           order (first = bottom); legendOrder only reorders the legend. toggleable turns each
-  //           legend entry into an on/off button (all on initially); hidden elements drop out of
-  //           the plot, the tooltip and the y-axis fit.
+  //           legendOrder?: [series key, ...], toggleable?: bool, initiallyHidden?: [id, ...]}
+  //           -- series draw in array order (first = bottom); legendOrder only reorders the
+  //           legend. toggleable turns each legend entry into an on/off button (on initially,
+  //           except the ids in initiallyHidden -- series keys, "ref:<index>", "rejected");
+  //           hidden elements drop out of the plot, the tooltip and the y-axis fit.
   function TimeChart(container, options) {
     this.container = container;
     this.opts = options;
@@ -71,7 +72,7 @@
       points: s.data.map((d) => ({ t: parseDate(d[0]), v: d[1], note: d[2] || null, rejected: !!d[3], iso: d[0] })),
     }));
     this.range = null;
-    this.hidden = new Set();  // series keys, "ref:<index>", "rejected"
+    this.hidden = new Set(options.toggleable ? options.initiallyHidden || [] : []);  // series keys, "ref:<index>", "rejected"
     this.root = h("div", "chart", container);
     if (this.series.length >= 2 || (options.refs || []).length) this.buildLegend();
     this.plot = h("div", "chart-plot", this.root);
@@ -97,7 +98,7 @@
       h("span", null, node, label);
       if (toggleable) {
         node.type = "button";
-        node.setAttribute("aria-pressed", "true");
+        node.setAttribute("aria-pressed", String(!this.hidden.has(id)));
         node.addEventListener("click", () => {
           const on = this.hidden.has(id);
           if (on) this.hidden.delete(id); else this.hidden.add(id);
