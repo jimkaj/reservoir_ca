@@ -47,6 +47,12 @@ python publish_site.py                                      # force-pushes a his
 python run_pipeline.py --project reservoir-ca --dry-run     # list what's due; add --publish to publish
 ```
 
+**Scheduling:** Windows Task Scheduler task "reservoir_ca daily pipeline" runs
+`scheduling/scheduled_run.ps1` (-> `run_pipeline.py --publish`) at logon (+5 min) and daily at
+09:00, at most once per day: a successful run writes the date to `logs/last_success.txt`, a failed
+one is retried at the next trigger. Daily logs in `logs/` (gitignored). Re-create the task with
+`powershell -ExecutionPolicy Bypass -File schedulingegister_task.ps1`.
+
 There is no automated test suite and no linter config. Every non-trivial script/function in this
 repo has instead been validated by running it live against real Earth Engine / CDEC data at
 production scale (not a small sample) and checking the output against an independent reference —
@@ -112,7 +118,8 @@ S2 scene ever covers it) gets a multi-tile mosaic instead, identified by a `"+"`
 sorted list of tile scene_ids (`stage1_query_measure.s2_covering_groups`/`build_s2_mosaic`).
 
 **Diagnostic/investigation scripts** (`aoi_diagnosis.py`, `weather_cross_reference.py`,
-`cirrus_screening.py`, `haze_screening.py`, `sar_geometry_analysis.py`, `smoke_test_compare.py`)
+`cirrus_screening.py`, `haze_screening.py`, `smoke_test_compare.py`; their result CSVs live in
+`planning/investigations/`, not `reservoirs/`, which holds only what the pipeline uses)
 exist because a reservoir's SAR/optical disagreement has, historically, had several different
 root causes (AOI mismatch, wind-roughened water, thin cirrus that `s2cloudless` misses, smoke/haze,
 winter ice, USACE flood-control drawdown regime, GEE catalog scenes with corrupted footprints).
