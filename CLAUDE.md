@@ -50,7 +50,9 @@ python run_pipeline.py --project reservoir-ca --dry-run     # list what's due; a
 **Scheduling:** Windows Task Scheduler task "reservoir_ca daily pipeline" runs
 `scheduling/scheduled_run.ps1` (-> `run_pipeline.py --publish`) at logon (+5 min) and daily at
 09:00, at most once per day: a successful run writes the date to `logs/last_success.txt`, a failed
-one is retried at the next trigger. Daily logs in `logs/` (gitignored). Re-create the task with
+one is retried at the next trigger. After a successful run it commits only the files the pipeline
+writes (`ProcessedImagery.csv`, `timeseries/`, `site_assets/representative/`) and pushes master
+-- which also pushes any other unpushed local commits. Daily logs in `logs/` (gitignored). Re-create the task with
 `powershell -ExecutionPolicy Bypass -File schedulingegister_task.ps1`.
 
 There is no automated test suite and no linter config. Every non-trivial script/function in this
