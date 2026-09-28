@@ -95,6 +95,16 @@ h2 { font-size: 18px; margin: 0 0 4px; font-weight: 600; }
 .muted { color: var(--text-muted); }
 p.note { color: var(--text-secondary); font-size: 13.5px; margin: 8px 0 0; max-width: 72ch; }
 p.image-note { margin: 0 0 10px; }
+/* "About these estimates": longer-form prose, kept to a readable line length. */
+.about { color: var(--text-secondary); font-size: 14px; line-height: 1.55; max-width: 76ch; }
+.about h3 { color: var(--text-primary); font-size: 15px; font-weight: 600; margin: 20px 0 6px; }
+.about p { margin: 8px 0 0; }
+.about ol, .about ul { margin: 8px 0 0; padding-left: 22px; }
+.about li { margin: 6px 0 0; }
+.about strong { color: var(--text-primary); font-weight: 600; }
+.about a { color: var(--accent); }
+.about table { margin-top: 10px; font-size: 13.5px; }
+.about td:first-child { color: var(--text-primary); width: 34%; }
 p.note strong { color: var(--text-primary); font-weight: 600; }
 
 .card {

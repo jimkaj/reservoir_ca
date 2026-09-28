@@ -66,7 +66,55 @@
 
   <section class="card" aria-labelledby="about-heading">
     <h2 id="about-heading">About these estimates</h2>
-    <p class="note">Each reservoir's water surface area is measured from Sentinel-1 radar (which sees through cloud) and Sentinel-2 optical imagery, both processed in Google Earth Engine. Area is converted to volume with a curve fit for each reservoir by pairing past area measurements with the storage the California Data Exchange Center (CDEC) reported on the same day. Radar and optical estimates of the same reservoir can differ by several percent, so the totals move a little from day to day as new images arrive.</p>
+    <div class="about">
+      <p>These estimates come from satellite images. For each reservoir, the water-covered surface area is measured, then that area is turned into a volume of stored water.</p>
+
+      <h3>Why measure from space?</h3>
+      <p>California already publishes official reservoir storage figures through the <a href="https://cdec.water.ca.gov/">California Data Exchange Center (CDEC)</a>. This site doesn't replace them. It's an independent way to measure the same thing using only freely available satellite imagery. A method like this could be used where no gauge exists, in denied areas, or to check a gauge that has gone quiet or started reporting stuck values. Both of those happen in CDEC's own data from time to time.</p>
+
+      <h3>How it works</h3>
+      <ol>
+        <li><strong>Measure the water's surface area.</strong> Two European Space Agency satellite missions photograph California every few days. <strong>Sentinel-1</strong> is a radar satellite: calm water reflects its microwaves away, so water shows up dark, and radar sees through cloud and works at night. <strong>Sentinel-2</strong> takes ordinary optical pictures, which separate water from land well but can't see through clouds, and haze or thin high cloud can fool them. For every new image, the water pixels inside an outline drawn around each reservoir are counted. All of the processing runs on Google Earth Engine.</li>
+        <li><strong>Tune the radar against the optical images.</strong> How dark "dark" has to be before radar calls something water varies from reservoir to reservoir. On days when both satellites passed over, the two are compared and each reservoir gets the radar setting that best matches the optical measurement. That setting is then checked on days that weren't used to choose it.</li>
+        <li><strong>Turn area into volume.</strong> A reservoir is a bowl, so a given surface area corresponds to a given amount of water, and the shape of that relationship differs for every reservoir. Each one is learned by lining up two years of area measurements with the storage CDEC reported on the same days, then fitting a curve that always rises (more area never means less water).</li>
+        <li><strong>Catch bad readings.</strong> A reading that disagrees by more than 20% with the other readings from the same fortnight is flagged as rejected. It's kept, not deleted, but it isn't used. When both satellites observed a reservoir on the same day, the optical reading is preferred.</li>
+      </ol>
+
+      <h3>How accurate is it?</h3>
+      <ul>
+        <li><strong>Per reservoir:</strong> the typical (median) estimate is within about 3% of CDEC.</li>
+        <li><strong>Statewide total:</strong> typically within about 3% of CDEC's total, and within about 7.5% on 95% of days.</li>
+        <li><strong>On data the curves had never seen:</strong> when the curves were built from the first year only and scored on the second year, the typical error was about 5%.</li>
+      </ul>
+      <p>One important caveat: because the area-to-volume curves are built from CDEC's own figures, agreeing with CDEC is partly by design. The comparison is a meaningful check on measurements taken <em>after</em> a curve was fitted, and each reservoir's page says which comparisons those are. It is not proof that the method would be this accurate at a reservoir with no official record at all.</p>
+      <p>Radar and optical estimates of the same day can differ by several percent, so the statewide total wobbles a little as new images arrive. Radar readings are smoothed slightly to reduce this.</p>
+
+      <h3>What's left out, and why</h3>
+      <p>The project started with 48 reservoirs. Ten aren't shown, because the satellite measurements couldn't be made reliable enough there:</p>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>Reservoir</th><th>Why it's excluded</th></tr></thead>
+          <tbody>
+            <tr><td>Hetch Hetchy</td><td>Deep, narrow granite canyon. Shadows from the canyon walls confuse the optical images.</td></tr>
+            <tr><td>Loon Lake, Ice House, Cherry Valley, Donner Lake, Independence Lake</td><td>High-Sierra lakes that freeze in winter. Even with winter months left out, radar and optical measurements disagreed too much.</td></tr>
+            <tr><td>Success Dam (Lake Success)</td><td>Shallow, muddy, and often drawn very low, so the measurements are noisy.</td></tr>
+            <tr><td>Castaic, Terminus (Lake Kaweah), Tulloch</td><td>Radar and optical measurements disagreed by more than 15%, and no setting fixed it.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Some reservoirs that are shown still need special handling. A few freeze in winter (Union Valley, Stampede, Donnells), so their winter images are skipped. A few read reliably only from certain satellite passes, so the others are ignored.</p>
+
+      <h3>Limitations</h3>
+      <ul>
+        <li><strong>Two years of history.</strong> The record starts in September 2024. The curves only know the water levels seen in that time, and a reservoir that drops below its lowest recorded level can't be estimated well until its curve is refitted.</li>
+        <li><strong>Radar has seasonal quirks.</strong> In late summer and autumn, radar readings tend to run a few percent high compared with the optical ones. Wind on the water also makes radar less reliable.</li>
+        <li><strong>Small reservoirs are harder.</strong> A small reservoir covers fewer pixels, so each misclassified pixel along the shoreline matters more.</li>
+        <li><strong>Not official data.</strong> For water supply or safety decisions, use CDEC and the reservoir operators.</li>
+      </ul>
+
+      <h3>Data sources</h3>
+      <p>Satellite imagery: Copernicus Sentinel-1 and Sentinel-2 (European Space Agency), accessed through <a href="https://earthengine.google.com/">Google Earth Engine</a>. Reservoir storage: <a href="https://cdec.water.ca.gov/">CDEC</a>, California Department of Water Resources. Reservoir outlines: <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors. Reference land-cover data for calibration checks: Google's Dynamic World. The code is on <a href="$repo_url">GitHub</a>.</p>
+    </div>
   </section>
 </main>
 <footer class="site">Updated $generated_at · <a href="$repo_url">Source code</a> · Contains modified Copernicus Sentinel data.</footer>
